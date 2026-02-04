@@ -1,0 +1,17 @@
+{
+  "name": "aetherplay",
+  "version": "1.0.0",
+  "description": "A backend app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node script.js"
+  },
+  "keywords": [
+    "hello",
+    "world",
+    "salbeen",
+    "chapagain"
+  ],
+  "author": "WIZ SALBEEN",
+  "license": "ISC"
+}
