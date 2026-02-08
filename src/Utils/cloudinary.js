@@ -27,6 +27,8 @@ const uploadFileCloudinary = async (localFileUrl) => {
   }
 };
 
+export { uploadFileCloudinary };
+
 // cloudinary.v2.uploader
 //   .upload("dog.mp4", {
 //     resource_type: "video",
