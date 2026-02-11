@@ -1,7 +1,9 @@
 import { asyncHandler } from "../Utils/AsyncHandler.js";
 import { ApiError } from "../Utils/ApiError.js";
 import { User } from "../Models/user.models.js";
-import { use } from "react";
+import { upload } from "../Middlewares/multer.middleware.js";
+import { uploadFileCloudinary } from "../Utils/cloudinary.js";
+export { ApiResponse } from "../Utils/ApiResponse.js";
 
 // controller for register
 
@@ -52,7 +54,68 @@ const registerUser = asyncHandler(async (req, res) => {
   if (existedUser) {
     throw new ApiError(409, "Username or email already exists. Try another!");
   }
+
+  //if we have to haldle files use use multer as we have inserted as middleware
+  // express gaves us default .body so as that multer gave as .files
+
+  const avatarLocalPath = req.files?.avatar[0]?.path;
+  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar Image Required");
+  }
+
+  // uploading files on cloudinary and it returns us response
+  const avatar = await uploadFileCloudinary(avatarLocalPath);
+  console.log("reference of file", avatar);
+
+  // uploading files on cloudinary and it returns us response
+
+  const coverImage = await uploadFileCloudinary(avatarLocalPath);
+  console.log("reference of file", coverImage);
+
+  if (!avatar) {
+    throw new ApiError(
+      409,
+      "Error occured while uploading avatr in cloudinary",
+    );
+  }
+
+  if (!coverImage) {
+    throw new ApiError(
+      409,
+      "Error occured while uploading cover Image in cloudinary",
+    );
+  }
+
+  //uplaoding data from frontend to our data base
+
+  const user = await User.create({
+    fullName,
+    avatar: avatar.url,
+    coverImage: coverImage?.url || "",
+    email,
+    password,
+    username: username.toLowerCase(),
+  });
 });
+
+const createdUser = await User.findById(user._id).select(
+  "-password -refreshToken",
+);
+
+if (!createdUser) {
+  throw new error(500, "Something gone wrong while registering process. ");
+}
+//sending response to api for frontend after all operation is set
+// ApiResponse(200, "Registration process success :) "); --> wrong method
+
+  return res.status(201).json(
+    new ApiResponse(201,"Registration process success :)  )
+  )
+
+
+
 
 // exporting methods
 export { registerUser };
