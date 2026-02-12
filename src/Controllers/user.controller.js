@@ -3,7 +3,9 @@ import { ApiError } from "../Utils/ApiError.js";
 import { User } from "../Models/user.models.js";
 // import { upload } from "../Middlewares/multer.middleware.js";
 import { uploadFileCloudinary } from "../Utils/cloudinary.js";
-export { ApiResponse } from "../Utils/ApiResponse.js";
+import { ApiResponse } from "../Utils/ApiResponse.js";
+
+// ===================================================================================================================
 
 // controller for register
 
@@ -59,15 +61,24 @@ const registerUser = asyncHandler(async (req, res) => {
   // express gaves us default .body so as that multer gave as .files
 
   const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+  let coverImageLocalPath;
+  if (
+    res.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImageLocalPath = req.files?.coverImage[0]?.path;
+  }
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar Image Required");
   }
 
-  if (!coverImageLocalPath) {
-    throw new ApiError(400, "Avatar Image Required");
-  }
+  // if (!coverImageLocalPath) {
+  //   throw new ApiError(400, "Avatar Image Required");
+  // }
 
   // uploading files on cloudinary and it returns us response
   const avatar = await uploadFileCloudinary(avatarLocalPath);
@@ -85,12 +96,12 @@ const registerUser = asyncHandler(async (req, res) => {
     );
   }
   //
-  if (!coverImage) {
-    throw new ApiError(
-      409,
-      "Error occured while uploading cover Image in cloudinary",
-    );
-  }
+  // if (!coverImage) {
+  //   throw new ApiError(
+  //     409,
+  //     "Error occured while uploading cover Image in cloudinary",
+  //   );
+  // }
 
   //uplaoding data from frontend to our data base
 
@@ -121,3 +132,5 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // exporting methods
 export { registerUser };
+
+// ===================================================================================================================
