@@ -1,7 +1,7 @@
 import { asyncHandler } from "../Utils/AsyncHandler.js";
 import { ApiError } from "../Utils/ApiError.js";
 import { User } from "../Models/user.models.js";
-import { upload } from "../Middlewares/multer.middleware.js";
+// import { upload } from "../Middlewares/multer.middleware.js";
 import { uploadFileCloudinary } from "../Utils/cloudinary.js";
 export { ApiResponse } from "../Utils/ApiResponse.js";
 
@@ -47,7 +47,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // to validate multiple field at one gooooo
 
-  const existedUser = User.findOne({
+  const existedUser = await User.findOne({
     $or: [{ username }, { email }],
   });
 
@@ -65,13 +65,17 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar Image Required");
   }
 
+  if (!coverImageLocalPath) {
+    throw new ApiError(400, "Avatar Image Required");
+  }
+
   // uploading files on cloudinary and it returns us response
   const avatar = await uploadFileCloudinary(avatarLocalPath);
   console.log("reference of file", avatar);
 
   // uploading files on cloudinary and it returns us response
 
-  const coverImage = await uploadFileCloudinary(avatarLocalPath);
+  const coverImage = await uploadFileCloudinary(coverImageLocalPath);
   console.log("reference of file", coverImage);
 
   if (!avatar) {
@@ -80,7 +84,7 @@ const registerUser = asyncHandler(async (req, res) => {
       "Error occured while uploading avatr in cloudinary",
     );
   }
-
+  //
   if (!coverImage) {
     throw new ApiError(
       409,
@@ -92,30 +96,28 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const user = await User.create({
     fullName,
-    avatar: avatar.url,
+    avatar: avatar.url || "",
     coverImage: coverImage?.url || "",
     email,
     password,
     username: username.toLowerCase(),
   });
+  //
+
+  const createdUser = await User.findById(user._id).select(
+    "-password -refreshToken",
+  );
+
+  if (!createdUser) {
+    throw new error(500, "Something gone wrong while registering process. ");
+  }
+  //sending response to api for frontend after all operation is set
+  // ApiResponse(200, "Registration process success :) "); --> wrong method
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, "Registration process success :) "));
 });
-
-const createdUser = await User.findById(user._id).select(
-  "-password -refreshToken",
-);
-
-if (!createdUser) {
-  throw new error(500, "Something gone wrong while registering process. ");
-}
-//sending response to api for frontend after all operation is set
-// ApiResponse(200, "Registration process success :) "); --> wrong method
-
-  return res.status(201).json(
-    new ApiResponse(201,"Registration process success :)  )
-  )
-
-
-
 
 // exporting methods
 export { registerUser };
