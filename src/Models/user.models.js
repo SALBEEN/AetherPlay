@@ -19,7 +19,7 @@ const userSchema = new Schema(
       unique: true,
       lowercase: true,
     },
-    fullname: {
+    fullName: {
       type: String,
       required: true,
       trim: true,
@@ -46,15 +46,13 @@ const userSchema = new Schema(
       type: String,
     },
   },
-  { timestamp: true },
+  { timestamps: true },
 );
-
-userSchema.pre("save", async function (next) {
-  // using a validation if the change happen in pass field or change req occur in password field
-  if (!this.isModified("password")) return next();
-  //should pass password in string ## syntax
-  this.password = bcrypt.hash(this.password, 10);
-  next(); // this create problem cause in every modification it refresh n save pass again n again
+userSchema.pre("save", async function () {
+  // using a validation if the change happen in password field or change req occur in password field
+  if (!this.isModified("password")) return;
+  // hash the password and wait for result
+  this.password = await bcrypt.hash(this.password, 10);
 });
 
 // this function or method of mongoose given a boolean value by comparing password from input and db
@@ -70,7 +68,7 @@ userSchema.methods.generateAccessToken = function () {
       _id: this._id,
       email: this.email,
       username: this.username,
-      fullname: this.fullname,
+      fullName: this.fullName,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
