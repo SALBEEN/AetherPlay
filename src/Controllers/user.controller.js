@@ -5,6 +5,31 @@ import { User } from "../Models/user.models.js";
 import { uploadFileCloudinary } from "../Utils/cloudinary.js";
 import { ApiResponse } from "../Utils/ApiResponse.js";
 
+/*
+Dependies Methods
+*/
+
+const generateAccessAndRefreshToken = async (userId) => {
+  try {
+    const user = User.findById(userId);
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    user.refreshToken = refreshToken;
+    // user.accessToken = accessToken;
+
+    await user.save({ validateBeforeSave: true });
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "Something gone wrong when generating access and refresh token",
+    );
+  }
+};
+
 // ===================================================================================================================
 
 // controller for register
@@ -163,6 +188,38 @@ const logInUser = asyncHandler(async (req, res) => {
   if (!isPasswordValid) {
     throw new ApiError(404, "User credentials doesnot match");
   }
+
+  //generating access and refresh token
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id,
+  );
+
+  const loggedInUser = User.findById(user._id).select(
+    "-password -refreshToken",
+  );
+
+  //cookies options
+
+  const option = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, option)
+    .cookie("refreshToken", refreshToken, option)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          user: loggedInUser,
+          accessToken,
+          refreshToken,
+        },
+        "User login successfully",
+      ),
+    );
 });
 
 // exporting methods
