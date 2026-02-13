@@ -130,7 +130,19 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, "Registration process success :) "));
 });
 
-// exporting methods
-export { registerUser };
-
 // ===================================================================================================================
+
+// todo
+/* 
+1. get data from user 
+2. check if user exist by username or email
+3. validate user password
+4. generate access token and refresh token
+5. send tokens in cookie after login is successfull
+6. send message to the frontend "User login successfull"
+
+*/
+const logInUser = asyncHandler(async (req, res) => {});
+
+// exporting methods
+export { registerUser, logInUser };
