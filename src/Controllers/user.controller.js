@@ -222,5 +222,31 @@ const logInUser = asyncHandler(async (req, res) => {
     );
 });
 
+const logOutUser = asyncHandler(async (req, res) => {
+  const user = req.user._id;
+  User.findByIdAndUpdate(
+    user,
+    {
+      $set: {
+        refreshToken: undefined,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+
+  const option = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", option)
+    .clearCookie("refreshToken", option)
+    .json(new ApiResponse(200, {}, "user logged out successfully"));
+});
+
 // exporting methods
-export { registerUser, logInUser };
+export { registerUser, logInUser, logOutUser };
