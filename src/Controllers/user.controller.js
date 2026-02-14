@@ -11,14 +11,16 @@ Dependies Methods
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
-    const user = User.findById(userId);
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new ApiError(404, "User not found when generating tokens");
+    }
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
     user.refreshToken = refreshToken;
-    // user.accessToken = accessToken;
-
+    // persist the refresh token
     await user.save({ validateBeforeSave: true });
 
     return { accessToken, refreshToken };
@@ -171,7 +173,7 @@ const logInUser = asyncHandler(async (req, res) => {
   // get data from user
   const { username, email, password } = req.body;
 
-  if (!username || !email) {
+  if (!username && !email) {
     throw new ApiError(401, "Username or email are required !");
   }
 
@@ -194,7 +196,7 @@ const logInUser = asyncHandler(async (req, res) => {
     user._id,
   );
 
-  const loggedInUser = User.findById(user._id).select(
+  const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken",
   );
 
