@@ -231,23 +231,53 @@ const logInUser = asyncHandler(async (req, res) => {
     //   throw new ApiError(400, "Unauthorized user token");
     // }
 
-    //verifying token
+    try {
+      //verifying token
 
-    const decodedToken = jwt.verify(
-      incomingRefreshToken,
-      process.env.REFRESH_TOKEN_SECRET,
-    );
+      const decodedToken = jwt.verify(
+        incomingRefreshToken,
+        process.env.REFRESH_TOKEN_SECRET,
+      );
 
-    const user = User.findById(decodedToken._id);
+      const user = await User.findById(decodedToken._id);
 
-    if (!user) {
-      throw new ApiError(401, "User missing");
-    }
+      if (!user) {
+        throw new ApiError(401, "User missing");
+      }
 
-    const isTokenMatch = incomingRefreshToken === user?.refreshToken;
+      const isTokenMatch = incomingRefreshToken === user?.refreshToken;
 
-    if (!isTokenMatch) {
-      throw new ApiError(401, "Token doesnot match");
+      if (!isTokenMatch) {
+        throw new ApiError(401, "Token doesnot match");
+      }
+
+      //cookies options
+
+      const option = {
+        httpOnly: true,
+        secure: true,
+      };
+
+      const { accessToken, newRefreshToken } =
+        await generateAccessAndRefreshToken(user?._id);
+
+      if (!(accessToken && newRefreshToken)) {
+        throw new ApiError(401, "Cannot generate new token");
+      }
+
+      res
+        .status(200)
+        .cookie("accesstoken", accessToken, option)
+        .cookie("refreshToken", newRefreshToken, option)
+        .json(
+          new ApiResponse(
+            200,
+            { accessToken, refreshToken },
+            "Access Token Refreshed",
+          ),
+        );
+    } catch (error) {
+      throw new ApiError(401, error?.message || "Invalid refresh Token");
     }
   });
 
