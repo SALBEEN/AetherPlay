@@ -1,8 +1,8 @@
 import { asyncHandler } from "../Utils/AsyncHandler.js";
 import { ApiError } from "../Utils/ApiError.js";
 import { User } from "../Models/user.models.js";
-// import { upload } from "../Middlewares/multer.middleware.js";
 import { uploadFileCloudinary } from "../Utils/cloudinary.js";
+import jwt from "jsonwebtoken";
 import { ApiResponse } from "../Utils/ApiResponse.js";
 
 /*
@@ -222,6 +222,32 @@ const logInUser = asyncHandler(async (req, res) => {
 
     if (!incomingRefreshToken) {
       throw new ApiError(400, "Unable to retrive token from user cookie");
+    }
+
+    // const user = req.user._id;
+    // const tokenMatched = user.refreshToken == incomingRefreshToken;
+
+    // if (!tokenMatched) {
+    //   throw new ApiError(400, "Unauthorized user token");
+    // }
+
+    //verifying token
+
+    const decodedToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET,
+    );
+
+    const user = User.findById(decodedToken._id);
+
+    if (!user) {
+      throw new ApiError(401, "User missing");
+    }
+
+    const isTokenMatch = incomingRefreshToken === user?.refreshToken;
+
+    if (!isTokenMatch) {
+      throw new ApiError(401, "Token doesnot match");
     }
   });
 
