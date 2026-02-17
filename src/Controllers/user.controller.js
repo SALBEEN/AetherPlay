@@ -207,6 +207,24 @@ const logInUser = asyncHandler(async (req, res) => {
     secure: true,
   };
 
+  /* 
+  Updating the user refresh token -> how?
+  ---> when a user made a request u access their cookie and fetch 
+  the refresh token from there ( As they are already expired ).
+  The expired refresh token still are in our Db and users cookie.
+  so, whenever user made a request we compare the tokend and create
+  a new token and store it in both cookie and our Db.
+  */
+
+  const RefreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken =
+      req.cookie?.refreshToken || req.body?.refreshToken;
+
+    if (!incomingRefreshToken) {
+      throw new ApiError(400, "Unable to retrive token from user cookie");
+    }
+  });
+
   return res
     .status(200)
     .cookie("accessToken", accessToken, option)
