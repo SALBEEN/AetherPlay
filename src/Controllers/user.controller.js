@@ -138,7 +138,7 @@ const registerUser = asyncHandler(async (req, res) => {
     coverImage: coverImage?.url || "",
     email,
     password,
-    username: username.toLowerCase(),
+    username: username,
   });
   //
 
@@ -225,17 +225,18 @@ const logInUser = asyncHandler(async (req, res) => {
 });
 
 const logOutUser = asyncHandler(async (req, res) => {
-  const user = req.user._id;
-  User.findByIdAndUpdate(
-    user,
-    {
-      $set: {
-        refreshToken: undefined,
-      },
-    },
-    {
-      new: true,
-    },
+  if (!req.user || !req.user._id) {
+    throw new ApiError(401, "Not authenticated");
+  }
+
+  const userId = req.user._id;
+
+  // Use $unset to remove the refreshToken field (setting to undefined in an update
+  // may be ignored). Await the update so we know it completed.
+  await User.findByIdAndUpdate(
+    userId,
+    { $unset: { refreshToken: "" } },
+    { new: true },
   );
 
   const option = {
