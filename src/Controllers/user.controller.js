@@ -325,5 +325,46 @@ const logOutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "user logged out successfully"));
 });
 
+// controller for user password change
+
+const changeUserPassword = asyncHandler(async (req, res) => {
+  // take the required field from frontend
+
+  const { oldPassword, newPassword, newConfirmPassword } = req.body;
+
+  // handling the data and verifing
+
+  if (!(newPassword === newConfirmPassword)) {
+    throw new ApiError(500, "Password doesnot match");
+  }
+
+  const user = await User.findById(req?.user._id);
+
+  // as we have schema as "User" but after finding user then all method are accessible
+  // through "user"
+
+  const isPassMatched = await user.isPasswordCorrect(oldPassword);
+
+  if (!isPassMatched) {
+    throw new ApiError(
+      500,
+      "Password doesnot match. Enter correct old password",
+    );
+  }
+
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: "false" });
+
+  return res.status(200).json(200, {}, "Password changes successfully");
+});
+
+// get current user
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(200, req.user, "Current user fetched successfully");
+});
+
 // exporting methods
 export { registerUser, logInUser, logOutUser, RefreshAccessToken };
