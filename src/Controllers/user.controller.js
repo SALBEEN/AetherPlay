@@ -326,4 +326,4 @@ const logOutUser = asyncHandler(async (req, res) => {
 });
 
 // exporting methods
-export { registerUser, logInUser, logOutUser };
+export { registerUser, logInUser, logOutUser, RefreshAccessToken };
