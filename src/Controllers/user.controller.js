@@ -443,6 +443,35 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   );
 });
 
+// updating coverImage
+
+const updateCoverImage = asyncHandler(async (req, res) => {
+  // we get file in request by the help of multer middleware
+  const coverImageLocalPath = req.file?.path;
+
+  if (!coverImageLocalPath) {
+    throw new ApiError(400, " unable to get cover image path");
+  }
+
+  // upload cover image in cloudinary
+
+  const coverImage = await uploadFileCloudinary(coverImageLocalPath);
+
+  if (!coverImage) {
+    throw new ApiError(400, "Error while uplaoding file in cloudinary");
+  }
+
+  User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        coverImage: coverImage?.url,
+      },
+    },
+    { new: true },
+  );
+});
+
 // exporting methods
 export {
   registerUser,
