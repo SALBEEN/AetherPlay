@@ -366,5 +366,47 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     .json(200, req.user, "Current user fetched successfully");
 });
 
+// update fields in frontend like fullName, email, profile pic etc.
+
+const updateAccountDetails = asyncHandler(async (req, res) => {
+  // take the fields that are to be changed
+
+  const { fullName, email } = req.body;
+
+  if (!(fullName && email)) {
+    throw new ApiError(501, "Cannot get the required field");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req?.user._id,
+    {
+      fullName: fullName,
+      email: email,
+    },
+    // it allow to return data that are just updated
+    { new: true },
+  ).select("-password");
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { user: user },
+        "Change have been updated successfully",
+      ),
+    );
+});
+
 // exporting methods
-export { registerUser, logInUser, logOutUser, RefreshAccessToken };
+export {
+  registerUser,
+  logInUser,
+  logOutUser,
+  changeUserPassword,
+  getCurrentUser,
+  updateAccountDetails,
+  generateAccessAndRefreshToken,
+  updateUserAvatar,
+  updateCoverImage,
+};
