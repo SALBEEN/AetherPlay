@@ -398,6 +398,51 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     );
 });
 
+// updating avatar
+
+const updateUserAvatar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = res.file?.path;
+
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Error while getting avatar local paths");
+  }
+
+  // after uploading on cloudinary it return a whole object and we have to
+  // pick url from it and update to our database
+  const avatar = await uploadFileCloudinary(avatarLocalPath);
+
+  if (!avatar) {
+    throw new ApiError(
+      400,
+      "Error while getting response after cloudinary uplaod -- cloudinary upload may fail",
+    );
+  }
+
+  const user = User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        avatar: avatar?.url,
+      },
+    },
+    { new: true },
+  ).select("-password");
+
+  if (!user) {
+    throw new ApiError(400, "Error while updating avatar in database");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        data: user,
+      },
+      "Avatar updated successfully",
+    ),
+  );
+});
+
 // exporting methods
 export {
   registerUser,
