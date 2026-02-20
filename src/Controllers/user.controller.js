@@ -519,6 +519,7 @@ const userChannelProfileDetails = asyncHandler(async (req, res) => {
     },
     {
       $project: {
+        username: 1,
         fullName: 1,
         coverImage: 1,
         avatar: 1,
@@ -529,6 +530,16 @@ const userChannelProfileDetails = asyncHandler(async (req, res) => {
       },
     },
   ]);
+
+  if (!channel?.length) {
+    throw new ApiError(401, "channel doesnot exists");
+  }
+
+  res
+  .status(200)
+  .json(
+    new ApiResponse( 200, {channel[0]}, "User channel fetched successfully")
+  )
 });
 
 // exporting methods
