@@ -472,6 +472,14 @@ const updateCoverImage = asyncHandler(async (req, res) => {
   );
 });
 
+const userChannelProfileDetails = asyncHandler(async (req, res) => {
+  const { username } = req.params;
+
+  if (!username) {
+    throw new ApiError(500, "Username not found");
+  }
+});
+
 // exporting methods
 export {
   registerUser,
@@ -483,4 +491,5 @@ export {
   generateAccessAndRefreshToken,
   updateUserAvatar,
   updateCoverImage,
+  userChannelProfileDetails,
 };
