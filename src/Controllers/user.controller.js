@@ -478,6 +478,39 @@ const userChannelProfileDetails = asyncHandler(async (req, res) => {
   if (!username) {
     throw new ApiError(500, "Username not found");
   }
+
+  const channel = User.aggregate([
+    {
+      // helps to match the database docs with given value for matching
+      $match: {
+        username: username?.toLowerCase(),
+      },
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo",
+      },
+    },
+    {
+      $addFields: {
+        subscribersCount: {
+          $size: $subscribers,
+        },
+        channelSubscribedCount: {
+          $size: $subscribedTo,
+        },
+      },
+    },
+  ]);
 });
 
 // exporting methods
