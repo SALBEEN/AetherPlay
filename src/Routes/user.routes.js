@@ -3,6 +3,13 @@ import {
   registerUser,
   logInUser,
   logOutUser,
+  changeUserPassword,
+  getCurrentUser,
+  updateAccountDetails,
+  updateUserAvatar,
+  updateCoverImage,
+  userChannelProfileDetails,
+  getWatchHistory,
 } from "../Controllers/user.controller.js";
 import { upload } from "../Middlewares/multer.middleware.js";
 import { verifyJWT } from "../Middlewares/auth.middleware.js";
