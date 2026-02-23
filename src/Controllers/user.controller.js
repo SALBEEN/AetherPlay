@@ -488,7 +488,7 @@ const userChannelProfileDetails = asyncHandler(async (req, res) => {
       $lookup: {
         from: "subscriptions",
         localField: "_id",
-        foreignField: "channel",
+        foreignField: "channel",  
         as: "subscribers",
       },
     },
@@ -541,6 +541,9 @@ const userChannelProfileDetails = asyncHandler(async (req, res) => {
     new ApiResponse( 200, {channel[0]}, "User channel fetched successfully")
   )
 });
+
+
+
 
 // exporting methods
 export {
