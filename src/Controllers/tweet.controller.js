@@ -45,7 +45,30 @@ const createTweet = asyncHandler(async (req, res) => {
 });
 
 const getUserTweets = asyncHandler(async (req, res) => {
-  // TODO: get user tweets
+  // finding out all the tweet made by a user
+  /*
+  using aggregration pipeline to find the tweet made by current user 
+  from tweets database collection
+
+  */
+
+  const user = req?.user._id;
+
+  if (!user) {
+    throw new ApiError("User cannot be found!!");
+  }
+
+  const tweet = await Tweet.aggregate([
+    {
+      $match: {
+        owner: new mongoose.Types.ObjectId(req?.user._id),
+      },
+    },
+  ]);
+
+  if (!tweet) {
+    throw new ApiError("Cannot find tweets");
+  }
 });
 
 const updateTweet = asyncHandler(async (req, res) => {
