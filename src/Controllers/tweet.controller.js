@@ -62,13 +62,14 @@ const getUserTweets = asyncHandler(async (req, res) => {
     throw new ApiError("Invalid User Id!!");
   }
 
-  const tweet = await Tweet.aggregate([
+  const tweets = await Tweet.aggregate([
     {
       // match does match the tweet made by current user
       $match: {
         owner: new mongoose.Types.ObjectId(req?.user._id),
       },
     },
+    // join user data/details  here
     {
       $lookup: {
         from: "users",
@@ -90,6 +91,18 @@ const getUserTweets = asyncHandler(async (req, res) => {
         createdAt: 1,
         updatedAt: 1,
         //expose owner summary fields from ownerInfo
+        owner: {
+          _id: "$ownerInfo._id",
+          fullName: "$ownerInfo.fullName",
+          username: "$ownerInfo.username",
+          avatar: "$ownerInfo.avatar",
+        },
+      },
+    },
+    {
+      // newest appear first
+      $sort: {
+        createdAt: -1,
       },
     },
   ]);
@@ -97,6 +110,16 @@ const getUserTweets = asyncHandler(async (req, res) => {
   if (!tweet) {
     throw new ApiError("Cannot find tweets");
   }
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        tweets,
+      },
+      "Tweets fetched successfully",
+    ),
+  );
 });
 
 const updateTweet = asyncHandler(async (req, res) => {
