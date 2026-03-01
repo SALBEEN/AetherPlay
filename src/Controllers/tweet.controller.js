@@ -7,14 +7,41 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const createTweet = asyncHandler(async (req, res) => {
   const { content } = req.body;
+  const user = req?.user._id;
+
+  if (!user) {
+    throw new ApiError("User cannot be found");
+  }
 
   if (!content) {
     throw new ApiError("Content cannot be empty");
   }
 
   if (content.trim().length < 10) {
-    throw new ApiError("Content length should be more than 10 character.");
+    throw new ApiError("Content length should be atleast than 10 character.");
   }
+
+  const owner = await req?.user._id;
+
+  const tweet = await Tweet.create({
+    owner,
+    content,
+  });
+
+  if (!tweet) {
+    throw new ApiError("Tweet cannot be made ");
+  }
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        madeBy: owner.fullName,
+        tweet: content,
+      },
+      "Tweet made successfully",
+    ),
+  );
 });
 
 const getUserTweets = asyncHandler(async (req, res) => {
