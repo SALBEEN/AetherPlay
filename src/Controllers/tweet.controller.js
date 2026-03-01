@@ -52,16 +52,44 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
   */
 
-  const user = req?.user._id;
+  const userId = req?.user._id;
 
-  if (!user) {
+  if (!userId) {
     throw new ApiError("User cannot be found!!");
+  }
+
+  if (!isValidObjectId(userId)) {
+    throw new ApiError("Invalid User Id!!");
   }
 
   const tweet = await Tweet.aggregate([
     {
+      // match does match the tweet made by current user
       $match: {
         owner: new mongoose.Types.ObjectId(req?.user._id),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "ownerInfo",
+      },
+    },
+    // unwind user info so its an object
+    {
+      $unwind: {
+        path: "$ownerInfo",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        content: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        //expose owner summary fields from ownerInfo
       },
     },
   ]);
