@@ -134,9 +134,9 @@ const updateTweet = asyncHandler(async (req, res) => {
   const { updatedTweetContent } = req.body;
   const { tweetId } = req.params;
 
-  const isupdatedTweetContentValid = (updatedTweetContent.trim().length => 10)
+  const isupdatedTweetContentValid = updatedTweetContent.trim().length >= 10
    && 
-   (updatedTweetContent.trim().length < 400);
+   (updatedTweetContent.trim().length <= 400);
 
    if(!isupdatedTweetContentValid){
     throw new ApiError("content should be more than 10 character and less than 400 character")
@@ -159,6 +159,11 @@ const updateTweet = asyncHandler(async (req, res) => {
   if(!updateTweet){
     throw new ApiError("Unable to update tweet")
   }
+
+  res.status(200)
+  .json(
+    new ApiResponse(200, {updateTweet}, "Tweet updated successfully")
+  )
 
 const deleteTweet = asyncHandler(async (req, res) => {
   //TODO: delete tweet
