@@ -131,15 +131,23 @@ const updateTweet = asyncHandler(async (req, res) => {
   // to update the tweet we should take the new tweet and replace it with current one
   // we got tweet id from params
 
-  const { newTweetContent } = req.body;
+  const { updatedTweetContent } = req.body;
   const { tweetId } = req.params;
+
+  const isupdatedTweetContentValid = (updatedTweetContent.trim().length => 10)
+   && 
+   (updatedTweetContent.trim().length < 400);
+
+   if(!isupdatedTweetContentValid){
+    throw new ApiError("content should be more than 10 character and less than 400 character")
+   }
 
   const updatedTweet = await Tweet.findByIdAndUpdate(
     tweetId,
     {
       $set: 
       {
-        content: newTweetContent,
+        content: updatedTweetContent,
       }
     },
     {
