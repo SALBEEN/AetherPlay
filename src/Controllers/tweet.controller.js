@@ -124,7 +124,6 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
 //===========================================================================
 
-
 const updateTweet = asyncHandler(async (req, res) => {
   //TODO: update tweet
 
@@ -134,39 +133,60 @@ const updateTweet = asyncHandler(async (req, res) => {
   const { updatedTweetContent } = req.body;
   const { tweetId } = req.params;
 
-  const isupdatedTweetContentValid = updatedTweetContent.trim().length >= 10
-   && 
-   (updatedTweetContent.trim().length <= 400);
+  const isupdatedTweetContentValid =
+    updatedTweetContent.trim().length >= 10 &&
+    updatedTweetContent.trim().length <= 400;
 
-   if(!isupdatedTweetContentValid){
-    throw new ApiError("content should be more than 10 character and less than 400 character")
-   }
+  if (!isupdatedTweetContentValid) {
+    throw new ApiError(
+      "content should be more than 10 character and less than 400 character",
+    );
+  }
 
   const updatedTweet = await Tweet.findByIdAndUpdate(
     tweetId,
     {
-      $set: 
-      {
+      $set: {
         content: updatedTweetContent,
-      }
+      },
     },
     {
       new: true,
       runValidators: true,
-    }
-  )
+    },
+  );
 
-  if(!updateTweet){
-    throw new ApiError("Unable to update tweet")
+  if (!updateTweet) {
+    throw new ApiError("Unable to update tweet");
   }
 
-  res.status(200)
-  .json(
-    new ApiResponse(200, {updateTweet}, "Tweet updated successfully")
-  )
+  res
+    .status(200)
+    .json(new ApiResponse(200, { updateTweet }, "Tweet updated successfully"));
+});
 
 const deleteTweet = asyncHandler(async (req, res) => {
-  //TODO: delete tweet
+  // to delete the tweet from database we take tweet id and remove it from db collection
+
+  const { tweetId } = req.params;
+
+  if (!tweetId) {
+    throw new ApiError("Cannot find tweet id");
+  }
+
+  const deleteTweet = await Tweet.findById(
+    tweetId,
+    {
+      $unset: {
+        content: "",
+        owner: "",
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
 });
 
 export { createTweet, getUserTweets, updateTweet, deleteTweet };
