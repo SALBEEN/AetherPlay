@@ -52,7 +52,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
   */
 
-  const userId = req?.user._id;
+  const userId = req.params;
 
   if (!userId) {
     throw new ApiError("User cannot be found!!");
@@ -107,7 +107,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
     },
   ]);
 
-  if (!tweet) {
+  if (!tweets) {
     throw new ApiError("Cannot find tweets");
   }
 
@@ -122,9 +122,35 @@ const getUserTweets = asyncHandler(async (req, res) => {
   );
 });
 
+//===========================================================================
+
+
 const updateTweet = asyncHandler(async (req, res) => {
   //TODO: update tweet
-});
+
+  // to update the tweet we should take the new tweet and replace it with current one
+  // we got tweet id from params
+
+  const { newTweetContent } = req.body;
+  const { tweetId } = req.params;
+
+  const updatedTweet = await Tweet.findByIdAndUpdate(
+    tweetId,
+    {
+      $set: 
+      {
+        content: newTweetContent,
+      }
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
+
+  if(!updateTweet){
+    throw new ApiError("Unable to update tweet")
+  }
 
 const deleteTweet = asyncHandler(async (req, res) => {
   //TODO: delete tweet
