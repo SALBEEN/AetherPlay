@@ -187,6 +187,10 @@ const deleteTweet = asyncHandler(async (req, res) => {
       runValidators: true,
     },
   );
+
+  // send response
+
+  res.status(200).json(new ApiResponse(200, {}, "Tweet deleted successfully"));
 });
 
 export { createTweet, getUserTweets, updateTweet, deleteTweet };
