@@ -7,7 +7,40 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const toggleSubscription = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
-  // TODO: toggle subscription
+
+  // validate if use exists or not
+
+  const userId = req.user._id;
+
+  if (!userId) {
+    throw new ApiError("User id unable to found");
+  }
+
+  const isUserLoggedIn = await User.findById(userId);
+
+  if (!isUserLoggedIn) {
+    throw new ApiError("User id unable to found");
+  }
+
+  // we have the channel to toggle subscription and loggedin user who will
+  // subscribe the channel
+
+  // firstly find if the user is already a subscriber
+
+  const existingSubscriber = await Subscription.findById({
+    channel: channelId,
+    subscriber: userId,
+  });
+
+  if (existingSubscriber) {
+    // if the user is already a subscriber remove it from subscriber
+
+    await Subscription.deleteOne({
+      channel: channelId,
+      subscriber: userId,
+    });
+  } else {
+  }
 });
 
 // controller to return subscriber list of a channel
