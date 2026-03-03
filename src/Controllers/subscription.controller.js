@@ -55,9 +55,13 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
 
+  if (!channelId) {
+    throw new ApiError("Unable to find channel");
+  }
+
   // we have to take out all the subscribers of the current users
 
-  await Subscription.aggregate([
+  const userChannelSubscriber = await Subscription.aggregate([
     {
       $match: {
         channel: new mongoose.Types.ObjectId(channelId),
@@ -92,11 +96,60 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
       },
     },
   ]);
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { subscriber: userChannelSubscriber },
+        "List Of channel subscribers",
+      ),
+    );
 });
 
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
   const { subscriberId } = req.params;
+
+  // we have to take out all the channels that the user have
+  // subscribed
+
+  const userChannelSubscribedTo = await Subscription.aggregate([
+    {
+      $match: {
+        subscriber: new mongoose.Types.ObjectId(subscriberId),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localFiled: "channel",
+        foreignField: "_id",
+        as: "subscribedToInfo",
+      },
+    },
+    {
+      $unwind: {
+        path: "$subscribedToInfo",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        createdAt: 1,
+        updatedAt: 1,
+        subscriber: {
+          _id: "$subscribedToInfo._id",
+          fullName: "$subscribedToInfo.fullName",
+          username: "$subscribedToInfo.username",
+          avatar: "$subscribedToInfo.avatar",
+          coverImage: "$subscribedToInfo.coverImage",
+          email: "$subscribedToInfo.email",
+        },
+      },
+    },
+  ]);
 });
 
 export { toggleSubscription, getUserChannelSubscribers, getSubscribedChannels };
