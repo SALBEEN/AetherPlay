@@ -46,12 +46,52 @@ const toggleSubscription = asyncHandler(async (req, res) => {
       channel: channelId,
       subscriber: userId,
     });
+
+    res.status(200).json(new ApiResponse(200, {}, "Channel subscribed Done!!"));
   }
 });
 
 // controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
+
+  // we have to take out all the subscribers of the current users
+
+  await Subscription.aggregate([
+    {
+      $match: {
+        channel: new mongoose.Types.ObjectId(channelId),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localFiled: "subscriber",
+        foreignField: "_id",
+        as: "subscriberInfo",
+      },
+    },
+    {
+      $unwind: {
+        path: "subscriberInfo",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        createdAt: 1,
+        updatedAt: 1,
+        subscriber: {
+          _id: "$subscriberInfo._id",
+          fullName: "$subscriberInfo.fullName",
+          username: "$subscriberInfo.username",
+          avatar: "$subscriberInfo.avatar",
+          coverImage: "$subscriberInfo.coverImage",
+          email: "$subscriberInfo.email",
+        },
+      },
+    },
+  ]);
 });
 
 // controller to return channel list to which user has subscribed
