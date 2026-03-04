@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../Models/user.models.js";
+import { Video } from "../Models/video.models.js";
 
 const createPlaylist = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
@@ -139,7 +140,38 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
   const { playlistId, videoId } = req.params;
+
+  if (!playlistId || !videoId) {
+    throw new ApiError("Unable to found playlistId or videoId");
+  }
+
+  const playlist = await Playlist.findById(playlistId);
+  const video = await Video.findById(videoId);
+
+  if (!isPlaylistExists || !isVideoExists) {
+    throw new ApiError("Playlist or video maynot exists");
+  }
+
+  for (let index = 0; index < isPlaylistExists.video.length; index++) {
+    if (isPlaylistExists.video[index].toString() === videoId.toString()) {
+      throw new ApiError("Video already exists");
+    }
+  }
+
+  await Playlist.findByIdAndUpdate(
+    isPlaylistExists,
+    {
+      $addToSet: { video: videoId },
+    },
+    {
+      $new: true,
+    },
+  );
 });
+
+res
+  .status(200)
+  .json(new ApiResponse(200, {}, "Video Added to playlist successfully"));
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
   const { playlistId, videoId } = req.params;
