@@ -65,14 +65,14 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     {
       $lookup: {
         from: "users",
-        localField: "Playlist",
+        localField: "owner",
         foreignField: "_id",
-        as: "PlaylistInfo",
+        as: "ownerInfo",
       },
     },
     {
       $unwind: {
-        path: "$PlaylistInfo",
+        path: "$ownerInfo",
         preserveNullAndEmptyArrays: true,
       },
     },
@@ -80,13 +80,16 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
       $project: {
         createdAt: 1,
         updatedAt: 1,
+        name: 1,
+        description: 1,
+        video: 1,
         owner: {
-          _id: "$PlaylistInfo._id",
-          fullName: "$PlaylistInfo.fullName",
-          username: "$PlaylistInfo.username",
-          avatar: "$PlaylistInfo.avatar",
-          coverImage: "$PlaylistInfo.coverImage",
-          email: "$PlaylistInfo.email",
+          _id: "$ownerInfo._id",
+          fullName: "$ownerInfo.fullName",
+          username: "$ownerInfo.username",
+          avatar: "$ownerInfo.avatar",
+          coverImage: "$ownerInfo.coverImage",
+          email: "$ownerInfo.email",
         },
       },
     },
