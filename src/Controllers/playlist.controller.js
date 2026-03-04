@@ -44,7 +44,63 @@ const createPlaylist = asyncHandler(async (req, res) => {
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
   const { userId } = req.params;
-  //TODO: get user playlists
+  // we have to find out the playlist created by the current user
+
+  if (!userId) {
+    throw new ApiError("User id missing from params");
+  }
+
+  const isUserExists = await User.findById(userId);
+
+  if (!isUserExists) {
+    throw new ApiError("User doesnot Exists");
+  }
+
+  const userPlaylists = await Playlist.aggregate([
+    {
+      $match: {
+        owner: new mongoose.Types.ObjectId(userId),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "Playlist",
+        foreignField: "_id",
+        as: "PlaylistInfo",
+      },
+    },
+    {
+      $unwind: {
+        path: "$PlaylistInfo",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        createdAt: 1,
+        updatedAt: 1,
+        owner: {
+          _id: "$PlaylistInfo._id",
+          fullName: "$PlaylistInfo.fullName",
+          username: "$PlaylistInfo.username",
+          avatar: "$PlaylistInfo.avatar",
+          coverImage: "$PlaylistInfo.coverImage",
+          email: "$PlaylistInfo.email",
+        },
+      },
+    },
+  ]);
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        playlists: userPlaylists,
+      },
+      "Playlist fetched Successfully",
+    ),
+  );
 });
 
 const getPlaylistById = asyncHandler(async (req, res) => {
