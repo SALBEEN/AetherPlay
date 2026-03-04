@@ -112,6 +112,10 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 const getSubscribedChannels = asyncHandler(async (req, res) => {
   const { subscriberId } = req.params;
 
+  if (!subscriberId) {
+    throw new ApiError("Cannot find subscriberId");
+  }
+
   // we have to take out all the channels that the user have
   // subscribed
 
@@ -150,6 +154,16 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
       },
     },
   ]);
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { SubscribedTo: getSubscribedChannels },
+        "All Channel to whom suer subscribed",
+      ),
+    );
 });
 
 export { toggleSubscription, getUserChannelSubscribers, getSubscribedChannels };
