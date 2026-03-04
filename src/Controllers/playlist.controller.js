@@ -176,6 +176,43 @@ res
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
   const { playlistId, videoId } = req.params;
   // TODO: remove video from playlist
+
+  if (!playlistId || !videoId) {
+    throw new ApiError("Unable to found playlistId or videoId");
+  }
+
+  const playlist = await Playlist.findById(playlistId);
+  const video = await Video.findById(videoId);
+
+  if (!isPlaylistExists || !isVideoExists) {
+    throw new ApiError("Playlist or video maynot exists");
+  }
+
+  // for (let index = 0; index < isPlaylistExists.video.length; index++) {
+  //   if (isPlaylistExists.video[index].toString() === videoId.toString()) {
+  //     throw new ApiError("Video already exists");
+  //   }
+  // }
+
+  await Playlist.findByIdAndUpdate(
+    isPlaylistExists,
+    {
+      $pull: { video: videoId },
+    },
+    {
+      $new: true,
+    },
+  );
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        "Video removed from playlist playlist successfully",
+      ),
+    );
 });
 
 const deletePlaylist = asyncHandler(async (req, res) => {
