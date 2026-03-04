@@ -109,6 +109,32 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 const getPlaylistById = asyncHandler(async (req, res) => {
   const { playlistId } = req.params;
   //TODO: get playlist by id
+
+  if (!playlistId) {
+    throw new ApiError("Playlist id not found");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(playlistId)) {
+    throw new ApiError("Invalid playlist ID");
+  }
+
+  const playlistDetails = await Playlist.findById(playlistId)
+    .populate("owner", "fullName username avatar email")
+    .populate("video", "title thumbnail duration views");
+
+  if (!playlistDetails) {
+    throw new ApiError("No such playlist exists");
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        playlistDetails,
+        "Successfully found playlist by ID",
+      ),
+    );
 });
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
