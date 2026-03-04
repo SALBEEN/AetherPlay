@@ -235,7 +235,35 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 const updatePlaylist = asyncHandler(async (req, res) => {
   const { playlistId } = req.params;
   const { name, description } = req.body;
-  //TODO: update playlist
+
+  if (!playlistId) {
+    throw new ApiError("Unable to find playlist id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(playlist)) {
+    throw new ApiError("Invalid Playlist ID");
+  }
+
+  if (!name || !description) {
+    throw new ApiError("Unable to found name and description");
+  }
+
+  if (!(name.trim().length < 0) || !(description.trim().length < 0)) {
+    throw new ApiError("Name or description cannot be empty");
+  }
+
+  await Playlist.findByIdAndUpdate(
+    playlistId,
+    {
+      $set: {
+        name: name,
+        description: description,
+      },
+    },
+    {
+      new: true,
+    },
+  );
 });
 
 export {
