@@ -36,7 +36,15 @@ const getAllVideos = asyncHandler(async (req, res) => {
     .skip((page - 1) * limit) // skips the number of video
     .limit(limit); // add limit of video maybe a number
 
-  res.status(200).json(new ApiResponse(200, {}, "Video fetched successfully"));
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { videosList: videos },
+        "Video fetched successfully",
+      ),
+    );
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -57,6 +65,18 @@ const updateVideo = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   //TODO: delete video
+
+  if (!videoId) {
+    throw new ApiError("Unable to found Video ID");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    throw new ApiError("Invalid Video ID");
+  }
+
+  await Video.findByIdAndDelete(videoId);
+
+  res.status(200).jsom(new ApiResponse(200, {}, "Video deleted successfully"));
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
