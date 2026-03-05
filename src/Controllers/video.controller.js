@@ -28,13 +28,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
   let filter = {};
 
   if (query) {
-    filter.title = { $regex: query, $options: "i" };
+    filter.title = { $regex: query, $options: "i" }; // i means casesensitive
   }
 
-  const videos = await Video.find({ title: { $regex: query, $options: "i" } })
-    .sort({ [sortBy]: sortType })
-    .skip((page - 1) * limit)
-    .limit(limit);
+  const videos = await Video.find({ title: { $regex: query, $options: "i" } }) // regex: matches the query in video title
+    .sort({ [sortBy]: sortType }) // sortby: views/likes/  sortType: 1(asc)/ -1(desen)
+    .skip((page - 1) * limit) // skips the number of video
+    .limit(limit); // add limit of video maybe a number
 
   res.status(200).json(new ApiResponse(200, {}, "Video fetched successfully"));
 });
