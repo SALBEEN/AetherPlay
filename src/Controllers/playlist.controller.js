@@ -245,7 +245,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
   }
 
   if (!name || !description) {
-    throw new ApiError("Unable to found name and description");
+    throw new ApiError("Unable to found name and description ");
   }
 
   if (!(name.trim().length < 0) || !(description.trim().length < 0)) {

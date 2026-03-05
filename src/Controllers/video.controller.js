@@ -7,8 +7,34 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+  // const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
   //TODO: get all videos based on query, sort, pagination
+
+  if (!userId) {
+    throw new ApiError("No userId found.");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new ApiError("Invalif user ID");
+  }
+
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const query = req.query.query || "";
+  const sortBy = req.query.sortBy || "createdAt";
+  const sortType = req.query.sortType === "asc" ? 1 : -1;
+  const userId = req.query.userId;
+
+  let filter = {};
+
+  if (query) {
+    filter.title = { $regex: query, $options: "i" };
+  }
+
+  const videos = await Video.find({ title: { $regex: query, $options: "i" } })
+    .sort({ [sortBy]: sortType })
+    .skip((page - 1) * limit)
+    .limit(limit);
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
