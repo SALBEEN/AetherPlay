@@ -146,7 +146,74 @@ const getVideoById = asyncHandler(async (req, res) => {
 
 const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-  //TODO: update video details like title, description, thumbnail
+  const { title, description } = req.body;
+
+  if (!videoId) {
+    throw new ApiError("Cannot get video ID");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    throw new ApiError("Imvalid video ID");
+  }
+
+  const user = req.user;
+
+  if (!user) {
+    throw new ApiError("Unauthorized: user not found");
+  }
+
+  // if (!mongoose.Types.ObjectId.isValid(user._id)) {
+  //   throw new ApiError("Invalid User ID");
+  // }
+
+  const updatedTitle = String(title).trim();
+  const updatedDescription = String(description).trim();
+
+  if (!updatedTitle || !updatedDescription) {
+    throw new ApiError("Cannot found title and description");
+  }
+
+  if (updatedTitle.length > 200)
+    throw new ApiError("Should be less than 200 character");
+
+  if (updatedDescription.length > 200)
+    throw new ApiError("Should be less than 200 character");
+
+  if (!res.files || !res.files.thumbnail || !res.files.thumbnail.length) {
+    new ApiError("Ubale to get thumbnail");
+  }
+
+  const updatedThumbnailLocalPath = res.files.thumbnail[0].path;
+
+  const updatedThumbnail = await uploadOnCloudinary(updatedThumbnailLocalPath);
+
+  const video = await Video.findByIdAndUpdate(
+    new mongoose.Types.ObjectId(videoId),
+    {
+      $set: {
+        title: updatedTitle,
+        description: updatedDescription,
+        thumbnail: updatedThumbnail,
+      },
+    },
+    {
+      $new: true,
+    },
+  );
+
+  if (!video) {
+    new ApiError("Unable to updated Video");
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { updateVideoDetail: video },
+        "Video updated successfully",
+      ),
+    );
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {
