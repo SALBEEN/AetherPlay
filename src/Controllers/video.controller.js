@@ -131,11 +131,17 @@ const getVideoById = asyncHandler(async (req, res) => {
   }
 
   const video = await Video.findById(videoId).populate(
-    "video",
-    "videoFile, thumbnail, title, duration, views, isPublished, owner",
+    "owner",
+    "fullName username avatar ",
   );
 
-  res.status(200).json(new ApiResponse(200, {}, "Video fetched successfully"));
+  if (!video) {
+    throw new ApiError("Video not found");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, { video }, "Video fetched successfully"));
 });
 
 const updateVideo = asyncHandler(async (req, res) => {
