@@ -161,7 +161,11 @@ const deleteVideo = asyncHandler(async (req, res) => {
     throw new ApiError("Invalid Video ID");
   }
 
-  await Video.findByIdAndDelete(videoId);
+  const deleted = await Video.findByIdAndDelete(videoId);
+
+  if (!deleted) {
+    throw new ApiError("Video delete failed");
+  }
 
   res.status(200).jsom(new ApiResponse(200, {}, "Video deleted successfully"));
 });
