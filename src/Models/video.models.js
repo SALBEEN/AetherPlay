@@ -15,6 +15,10 @@ const videoSchema = new Schema(
       type: String,
       required: true,
     },
+    description: {
+      type: Number,
+      required: true,
+    },
     duration: {
       type: Number,
       required: true,

@@ -50,6 +50,40 @@ const getAllVideos = asyncHandler(async (req, res) => {
 const publishAVideo = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
   // TODO: get video, upload to cloudinary, create video
+
+  const videoLocalPath = req.files.videoFile[0].path;
+  const thumbnailLocalPath = req.files.thumbnail[0].path;
+
+  if (!videoLocalPath || !thumbnailLocalPath) {
+    throw new ApiError("Invalid videoLocalPath and thumbnailLocalPath ");
+  }
+
+  if (!title || !description) {
+    throw new ApiError("title or description could not found");
+  }
+
+  if (!title.trim().length > 0 || !description.trim().length > 0) {
+    throw new ApiError("title and description cannot be empty");
+  }
+
+  const videoFile = await uploadOnCloudinary(videoLocalPath);
+  const thumbnailFile = await uploadOnCloudinary(thumbnailLocalPath);
+
+  const publishVideo = await Video.create({
+    videoFile: videoFile || null,
+    thumbnail: thumbnailFile,
+    title: title || "",
+    description: description || "",
+    duration,
+    views,
+    isPublished: true,
+  });
+
+  if (!publishVideo) {
+    throw new ApiError("video publish failed");
+  }
+
+  res.status(200).json(new ApiResponse(200, {}, "Video Uploaded successfull"));
 });
 
 const getVideoById = asyncHandler(async (req, res) => {
