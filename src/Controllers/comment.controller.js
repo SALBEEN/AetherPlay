@@ -116,6 +116,10 @@ const addComment = asyncHandler(async (req, res) => {
   if (!comment) {
     throw new ApiError("Cannot comment to the video");
   }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, { comment }, "Comment added to the video"));
 });
 
 const updateComment = asyncHandler(async (req, res) => {
