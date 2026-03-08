@@ -7,7 +7,66 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 const getVideoComments = asyncHandler(async (req, res) => {
   //TODO: get all comments for a video
   const { videoId } = req.params;
-  const { page = 1, limit = 10 } = req.query;
+  // const { page = "", limit "" } = req.query;
+
+  const user = req?.user._id;
+
+  if (!videoId) {
+    throw new ApiError("Unable to found video id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    throw new ApiError("Invalid video id: video doesnot exists");
+  }
+
+  if (!user) {
+    throw new ApiError("Unable to found user id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(user)) {
+    throw new ApiError("Invalid user id: user doesnot exists");
+  }
+
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  await Comment.aggregate([
+    {
+      $match: {
+        video: new mongoose.Types.ObjectId(videoId),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "ownerInfo",
+      },
+    },
+    {
+      $unwind: "$ownerInfo",
+    },
+    {
+      $skip: skip,
+    },
+    {
+      $limit: limit,
+    },
+    {
+      $project: {
+        comment: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        owner: {
+          _id: "$ownerInfo._id",
+          fullname: "$ownerInfo.fullName",
+          avatar: "$ownerInfo.avatar",
+        },
+      },
+    },
+  ]);
 });
 
 const addComment = asyncHandler(async (req, res) => {

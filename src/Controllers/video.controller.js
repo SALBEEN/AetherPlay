@@ -264,10 +264,10 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 });
 
 export {
-  getAllVideos, // done
+  getAllVideos,
   publishAVideo,
-  getVideoById, //done
+  getVideoById,
   updateVideo,
-  deleteVideo, // done
+  deleteVideo,
   togglePublishStatus,
 };
