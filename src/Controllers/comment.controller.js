@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 import { Comment } from "../models/comment.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -75,6 +75,47 @@ const getVideoComments = asyncHandler(async (req, res) => {
 
 const addComment = asyncHandler(async (req, res) => {
   // TODO: add a comment to a video
+  const videoId = req.params;
+
+  if (!videoId) {
+    throw new ApiError("Cannot get video Id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    throw new ApiError("Invalid ID: Video doesnot exists");
+  }
+
+  const userId = req.user._id;
+
+  if (!userId) {
+    throw new ApiError("Cannot get user Id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new ApiError("Error: User doesn't exists");
+  }
+
+  const { content } = req.body;
+
+  const trimmedContent = String(content).trim();
+
+  if (!trimmedContent) {
+    throw new ApiError("Comment cannot be empty");
+  }
+
+  if (trimmedContent.length > 300) {
+    throw new ApiError("Comment cannot be more than 300 character");
+  }
+
+  const comment = await Comment.create({
+    content: content,
+    owner: mongoose.Types.ObjectId(userId),
+    video: mongoose.Types.ObjectId(videoId),
+  });
+
+  if (!comment) {
+    throw new ApiError("Cannot comment to the video");
+  }
 });
 
 const updateComment = asyncHandler(async (req, res) => {
