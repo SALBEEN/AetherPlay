@@ -168,6 +168,22 @@ const updateComment = asyncHandler(async (req, res) => {
 
 const deleteComment = asyncHandler(async (req, res) => {
   // TODO: delete a comment
+
+  const commentId = res.params;
+
+  if (!commentId) {
+    throw new ApiError("cannot get comment id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(commentId)) {
+    throw new ApiError("Invalid comment");
+  }
+
+  const deletedComment = await Comment.findByIdAndDelete(commentId);
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Comment deleted successfully"));
 });
 
 export { getVideoComments, addComment, updateComment, deleteComment };
