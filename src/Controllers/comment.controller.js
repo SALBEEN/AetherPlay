@@ -124,6 +124,46 @@ const addComment = asyncHandler(async (req, res) => {
 
 const updateComment = asyncHandler(async (req, res) => {
   // TODO: update a comment
+
+  const { newContent } = req.body;
+  const commentId = req.params;
+
+  const trimmedContent = String(newContent).trim();
+
+  if (!trimmedContent) {
+    throw new ApiError("Comment cannot be empty");
+  }
+
+  if (!commentId) {
+    throw new ApiError("cannot get comment id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(commentId)) {
+    throw new ApiError("Invalid comment");
+  }
+
+  const updatedComment = await Comment.findByIdAndUpdate(
+    commentId,
+    {
+      $set: {
+        content: trimmedContent,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
+
+  if (!updateComment) {
+    throw new ApiError("Cannot update the comment");
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, { updateComment }, "Comment updated successfully"),
+    );
 });
 
 const deleteComment = asyncHandler(async (req, res) => {
