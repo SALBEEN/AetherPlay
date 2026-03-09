@@ -144,6 +144,76 @@ const getLikedVideos = asyncHandler(async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(user)) {
     throw new ApiError("User doesnot exists");
   }
+
+  const likedVideos = await Like.aggregate([
+    {
+      $match: {
+        likedBy: mongoose.Types.ObjectId(user),
+      },
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "video",
+        foreignField: "_id",
+        as: "videoInfo",
+      },
+    },
+    {
+      $unwind: {
+        path: "$videoInfo",
+        preserveNullAndEmptyArrays: false,
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "$videoInfo.owner",
+        foreignField: "_id",
+        as: "ownerInfo",
+      },
+    },
+    {
+      $unwind: {
+        path: "$videoInfo",
+        preserveNullAndEmptyArrays: false,
+      },
+    },
+    {
+      $project: {
+        _id: "$videoInfo._id",
+        title: "$videoInfo.title",
+        description: "$videoInfo.description",
+        videoFile: "$videoInfo.videoFile",
+        thumbnail: "$videoInfo.thumbnail",
+        duration: "$videoInfo.duration",
+        views: "$videoInfo.views",
+        createdAt: "$videoInfo.createdAt",
+        likedAt: "$createdAt", // createdAt of the Like document
+        owner: {
+          _id: "$ownerInfo._id",
+          fullName: "$ownerInfo.fullName",
+          username: "$ownerInfo.username",
+          avatar: "$ownerInfo.avatar",
+        },
+      },
+    },
+    {
+      $sort: {
+        likedAt: "-1",
+      },
+    },
+  ]);
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { likedVideos: likedVideos },
+        "Fetched Liked videos of a user",
+      ),
+    );
 });
 
 export { toggleCommentLike, toggleTweetLike, toggleVideoLike, getLikedVideos };
