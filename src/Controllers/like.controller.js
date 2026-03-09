@@ -16,7 +16,32 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(user)) {
     throw new ApiError("User doesnot exists");
   }
+
+  if (!videoId) {
+    throw new ApiError("Cannot get video id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    throw new ApiError("video doesn't exists");
+  }
   //TODO: toggle like on video
+
+  const isAlreadyLiked = await Like.findById({
+    video: videoId,
+    likedBy: user,
+  });
+
+  if (isAlreadyLiked) {
+    await Like.deleteOne({
+      video: videoId,
+      likedBy: user,
+    });
+  } else {
+    Like.createOne({
+      video: videoId,
+      likedBy: user,
+    });
+  }
 });
 
 const toggleCommentLike = asyncHandler(async (req, res) => {
