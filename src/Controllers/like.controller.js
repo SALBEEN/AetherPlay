@@ -6,21 +6,61 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
+
+  const user = req.user._id;
+
+  if (!user) {
+    throw new ApiError("Cannot get user id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(user)) {
+    throw new ApiError("User doesnot exists");
+  }
   //TODO: toggle like on video
 });
 
 const toggleCommentLike = asyncHandler(async (req, res) => {
   const { commentId } = req.params;
+
+  const user = req.user._id;
+
+  if (!user) {
+    throw new ApiError("Cannot get user id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(user)) {
+    throw new ApiError("User doesnot exists");
+  }
   //TODO: toggle like on comment
 });
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
+
+  const user = req.user._id;
+
+  if (!user) {
+    throw new ApiError("Cannot get user id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(user)) {
+    throw new ApiError("User doesnot exists");
+  }
   //TODO: toggle like on tweet
 });
 
 const getLikedVideos = asyncHandler(async (req, res) => {
   //TODO: get all liked videos
+
+  const user = req.user._id;
+
+  if (!user) {
+    throw new ApiError("Cannot get user id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(user)) {
+    throw new ApiError("User doesnot exists");
+  }
 });
 
 export { toggleCommentLike, toggleTweetLike, toggleVideoLike, getLikedVideos };
