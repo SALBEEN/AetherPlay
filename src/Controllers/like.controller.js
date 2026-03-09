@@ -101,6 +101,34 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(user)) {
     throw new ApiError("User doesnot exists");
   }
+
+  if (!tweetId) {
+    throw new ApiError("Cannot get video id");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(tweetId)) {
+    throw new ApiError("video doesn't exists");
+  }
+  //TODO: toggle like on video
+
+  const isAlreadyLiked = await Like.findById({
+    video: tweetId,
+    likedBy: user,
+  });
+
+  if (isAlreadyLiked) {
+    await Like.deleteOne({
+      video: tweetId,
+      likedBy: user,
+    });
+  } else {
+    Like.createOne({
+      video: tweetId,
+      likedBy: user,
+    });
+  }
+
+  res.status(200).json(new ApiResponse(200, {}, "Like togglled successfully"));
   //TODO: toggle like on tweet
 });
 
