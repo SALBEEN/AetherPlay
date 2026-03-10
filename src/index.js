@@ -6,25 +6,6 @@ import connectDB from "./DB/index.js";
 
 dotenv.config({ path: "./env" });
 
-// const app = express();
-
-/*
-(async () => {
-  try {
-    await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`);
-    app.on("error", (error) => {
-      console.log("ERRR: ", error);
-    });
-  } catch (error) {
-    console.log("Errr: ", error);
-  }
-
-  app.listen(process.env.PORT, () => {
-    console.log(`App listening on ${process.env.PORT}`);
-  });
-})();
-*/
-
 import { app } from "./app.js";
 
 app.get("/salben", () => {
@@ -41,6 +22,6 @@ connectDB()
     console.log("Data base connection Failed!!!!!!");
   });
 
-app.listen(process.env.PORT, () => {
-  console.log(`App listening on ${process.env.PORT}`);
-});
+// app.listen(process.env.PORT, () => {
+//   console.log(`App listening on ${process.env.PORT}`);
+// });

@@ -400,7 +400,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 // updating avatar
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
-  const avatarLocalPath = res.file?.path;
+  const avatarLocalPath = req.file?.path;
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Error while getting avatar local paths");
@@ -417,7 +417,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     );
   }
 
-  const user = User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
