@@ -1,12 +1,39 @@
+// ...existing code...
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
-//configuring cloudinary
+// Resolve Cloudinary env names (support common variants)
+const cloudName =
+  process.env.CLOUDINARY_CLOUD_NAME ||
+  process.env.CLOUDINARY_API_NAME ||
+  process.env.CLOUD_NAME;
+const apiKey = process.env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_KEY;
+const apiSecret =
+  process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_SECRET;
 
+// Fail fast in production when config is missing so issues are obvious
+if (!cloudName || !apiKey || !apiSecret) {
+  const missing = [
+    !cloudName && "CLOUDINARY_CLOUD_NAME or CLOUDINARY_API_NAME",
+    !apiKey && "CLOUDINARY_API_KEY",
+    !apiSecret && "CLOUDINARY_API_SECRET",
+  ]
+    .filter(Boolean)
+    .join(", ");
+  // Log a clear message and throw — prevents silent misconfig in prod
+  console.error(
+    `Missing Cloudinary configuration: ${missing}. Please set the env variables correctly.`,
+  );
+  throw new Error(
+    `Cloudinary configuration missing: ${missing}. See README for required env vars.`,
+  );
+}
+
+// configuring cloudinary with resolved values
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_API_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: cloudName,
+  api_key: apiKey,
+  api_secret: apiSecret,
 });
 
 // async method as a utils for multiple usage
@@ -52,11 +79,4 @@ const uploadFileCloudinary = async (localFileUrl) => {
 
 export { uploadFileCloudinary };
 
-// cloudinary.v2.uploader
-//   .upload("dog.mp4", {
-//     resource_type: "video",
-//     public_id: "my_dog",
-//     overwrite: true,
-//     notification_url: "https://mysite.example.com/notify_endpoint",
-//   })
-//   .then((result) => console.log(result));
+// ...existing code...
