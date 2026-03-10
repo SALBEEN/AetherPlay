@@ -478,12 +478,13 @@ const userChannelProfileDetails = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Username not found");
   }
 
-  const channel = User.aggregate([
+  const channel = await User.aggregate([
     {
-      // helps to match the database docs with given value for matching
       $match: {
         username: username?.toLowerCase(),
       },
+    },
+    {
       $lookup: {
         from: "subscriptions",
         localField: "_id",
@@ -502,14 +503,14 @@ const userChannelProfileDetails = asyncHandler(async (req, res) => {
     {
       $addFields: {
         subscribersCount: {
-          $size: $subscribers,
+          $size: "$subscribers",
         },
         channelSubscribedCount: {
-          $size: $subscribedTo,
+          $size: "$subscribedTo",
         },
         isSubscribed: {
           $cond: {
-            if: { $in: [req?.user._id, "$subscribers.subscribe"] },
+            if: { $in: [req?.user._id, "$subscribers.subscriber"] },
             then: true,
             else: false,
           },
