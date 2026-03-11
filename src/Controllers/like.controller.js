@@ -10,19 +10,19 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
   const user = req.user._id;
 
   if (!user) {
-    throw new ApiError("Cannot get user id");
+    throw new ApiError(401, "Cannot get user id");
   }
 
   if (!mongoose.Types.ObjectId.isValid(user)) {
-    throw new ApiError("User doesnot exists");
+    throw new ApiError(401, "User doesnot exists");
   }
 
   if (!videoId) {
-    throw new ApiError("Cannot get video id");
+    throw new ApiError(401, "Cannot get video id");
   }
 
   if (!mongoose.Types.ObjectId.isValid(videoId)) {
-    throw new ApiError("video doesn't exists");
+    throw new ApiError(401, "video doesn't exists");
   }
   //TODO: toggle like on video
 
@@ -52,19 +52,19 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
   const user = req.user._id;
 
   if (!user) {
-    throw new ApiError("Cannot get user id");
+    throw new ApiError(401, "Cannot get user id");
   }
 
   if (!mongoose.Types.ObjectId.isValid(user)) {
-    throw new ApiError("User doesnot exists");
+    throw new ApiError(401, "User doesnot exists");
   }
 
   if (!commentId) {
-    throw new ApiError("Cannot get video id");
+    throw new ApiError(401, "Cannot get video id");
   }
 
   if (!mongoose.Types.ObjectId.isValid(commentId)) {
-    throw new ApiError("video doesn't exists");
+    throw new ApiError(401, "video doesn't exists");
   }
   //TODO: toggle like on video
 
@@ -95,19 +95,19 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
   const user = req.user._id;
 
   if (!user) {
-    throw new ApiError("Cannot get user id");
+    throw new ApiError(401, "Cannot get user id");
   }
 
   if (!mongoose.Types.ObjectId.isValid(user)) {
-    throw new ApiError("User doesnot exists");
+    throw new ApiError(401, "User doesnot exists");
   }
 
   if (!tweetId) {
-    throw new ApiError("Cannot get video id");
+    throw new ApiError(401, "Cannot get video id");
   }
 
   if (!mongoose.Types.ObjectId.isValid(tweetId)) {
-    throw new ApiError("video doesn't exists");
+    throw new ApiError(401, "video doesn't exists");
   }
   //TODO: toggle like on video
 
@@ -138,11 +138,11 @@ const getLikedVideos = asyncHandler(async (req, res) => {
   const user = req.user._id;
 
   if (!user) {
-    throw new ApiError("Cannot get user id");
+    throw new ApiError(401, "Cannot get user id");
   }
 
   if (!mongoose.Types.ObjectId.isValid(user)) {
-    throw new ApiError("User doesnot exists");
+    throw new ApiError(401, "User doesnot exists");
   }
 
   const likedVideos = await Like.aggregate([

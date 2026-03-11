@@ -8,9 +8,9 @@ dotenv.config({ path: "./env" });
 
 import { app } from "./app.js";
 
-app.get("/salben", () => {
-  console.log("Its Aether play Backend server");
-});
+// app.get("/salben", () => {
+//   console.log("Its Aether play Backend server");
+// });
 
 connectDB()
   .then(() => {
