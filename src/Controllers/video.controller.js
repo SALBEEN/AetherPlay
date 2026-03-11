@@ -11,11 +11,11 @@ const getAllVideos = asyncHandler(async (req, res) => {
   //TODO: get all videos based on query, sort, pagination
 
   if (!userId) {
-    throw new ApiError("No userId found.");
+    throw new ApiError(400, "No userId found.");
   }
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new ApiError("Invalif user ID");
+    throw new ApiError(400, "Invalif user ID");
   }
 
   const page = Number(req.query.page) || 1;
@@ -53,22 +53,22 @@ const publishAVideo = asyncHandler(async (req, res) => {
   const user = req?.user;
 
   if (!user || !user._id) {
-    throw new ApiError("Unauthorized: user not found");
+    throw new ApiError(400, "Unauthorized: user not found");
   }
 
-  if (!req.files || !res.files.videoFiles || !res.files.videoFile.length) {
-    throw new ApiError("Video file is required");
+  if (!req.files || !req.files.videoFile || !req.files.videoFile.length) {
+    throw new ApiError(400, "Video file is required");
   }
 
-  if (!req.files || !res.files.thumbnail || !res.files.thumbnail.length) {
-    throw new ApiError("thumbnail file is required");
+  if (!req.files || !req.files.thumbnail || !req.files.thumbnail.length) {
+    throw new ApiError(400, "thumbnail file is required");
   }
 
   const videoLocalPath = req.files.videoFile[0].path;
   const thumbnailLocalPath = req.files.thumbnail[0].path;
 
   if (!videoLocalPath || !thumbnailLocalPath) {
-    throw new ApiError("Can't get videoLocalPath and thumbnailLocalPath ");
+    throw new ApiError(400, "Can't get videoLocalPath and thumbnailLocalPath ");
   }
 
   // if (!title || !description) {
@@ -82,37 +82,38 @@ const publishAVideo = asyncHandler(async (req, res) => {
   const videoTitle = String(title).trim();
   const videoDescription = String(description).trim();
 
-  if (!videoTitle) throw new ApiError("Title is required");
-  if (!videoDescription) throw new ApiError("videoDescription is required");
+  if (!videoTitle) throw new ApiError(400, "Title is required");
+  if (!videoDescription)
+    throw new ApiError(400, "videoDescription is required");
 
   if (videoTitle.length > 200)
-    throw new ApiError("Title too long (max char is 200)");
+    throw new ApiError(400, "Title too long (max char is 200)");
   if (videoDescription.length > 200)
-    throw new ApiError("videoDescription too long (max char is 200)");
+    throw new ApiError(400, "videoDescription too long (max char is 200)");
 
   const videoFile = await uploadOnCloudinary(videoLocalPath);
   const thumbnailFile = await uploadOnCloudinary(thumbnailLocalPath);
 
   if (!videoFile || !thumbnailFile) {
-    throw new ApiError("File upload failed");
+    throw new ApiError(400, "File upload failed");
   }
 
   const videoDuration = req.body.duration ? Number(req.body.duration) : null;
   const videoViews = req.body.views ? Number(req.body.views) : 0;
 
   const publishVideo = await Video.create({
-    videoFile,
-    thumbnail: thumbnailFile,
+    videoFile: videoFile.url,
+    thumbnail: thumbnailFile.url,
     title: videoTitle,
     description: videoDescription,
-    duration,
-    views,
+    duration: videoDuration,
+    views: videoViews,
     isPublished: true,
-    owner: mongoose.Types.ObjectId(user._id),
+    owner: new mongoose.Types.ObjectId(user._id),
   });
 
   if (!publishVideo) {
-    throw new ApiError("video publish failed");
+    throw new ApiError(400, "video publish failed");
   }
 
   res.status(200).json(new ApiResponse(200, {}, "Video Uploaded successfull"));
