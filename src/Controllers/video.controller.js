@@ -222,17 +222,17 @@ const deleteVideo = asyncHandler(async (req, res) => {
   //TODO: delete video
 
   if (!videoId) {
-    throw new ApiError("Unable to found Video ID");
+    throw new ApiError(400, "Unable to found Video ID");
   }
 
   if (!mongoose.Types.ObjectId.isValid(videoId)) {
-    throw new ApiError("Invalid Video ID");
+    throw new ApiError(400, "Invalid Video ID");
   }
 
   const deleted = await Video.findByIdAndDelete(videoId);
 
   if (!deleted) {
-    throw new ApiError("Video delete failed");
+    throw new ApiError(400, "Video delete failed");
   }
 
   res.status(200).jsom(new ApiResponse(200, {}, "Video deleted successfully"));
@@ -241,14 +241,14 @@ const deleteVideo = asyncHandler(async (req, res) => {
 const togglePublishStatus = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
-  if (!videoId) throw new ApiError("Missing video ID");
+  if (!videoId) throw new ApiError(400, "Missing video ID");
 
   if (!mongoose.Types.ObjectId.isValid(videoId)) {
-    throw new ApiError("Invalid video id");
+    throw new ApiError(400, "Invalid video id");
   }
 
   const video = await Video.findById(videoId);
-  if (!video) throw new ApiError("Cannot found video");
+  if (!video) throw new ApiError(400, "Cannot found video");
 
   video.isPublished = !video.isPublished;
   await video.save();
