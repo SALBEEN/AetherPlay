@@ -124,11 +124,11 @@ const getVideoById = asyncHandler(async (req, res) => {
   //TODO: get video by id
 
   if (!videoId) {
-    throw new ApiError("No userId found.");
+    throw new ApiError(400, "No userId found.");
   }
 
   if (!mongoose.Types.ObjectId.isValid(videoId)) {
-    throw new ApiError("Invalif user ID");
+    throw new ApiError(400, "Invalif user ID");
   }
 
   const video = await Video.findById(videoId).populate(
@@ -137,7 +137,7 @@ const getVideoById = asyncHandler(async (req, res) => {
   );
 
   if (!video) {
-    throw new ApiError("Video not found");
+    throw new ApiError(400, "Video not found");
   }
 
   res
@@ -150,17 +150,17 @@ const updateVideo = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
 
   if (!videoId) {
-    throw new ApiError("Cannot get video ID");
+    throw new ApiError(400, "Cannot get video ID");
   }
 
   if (!mongoose.Types.ObjectId.isValid(videoId)) {
-    throw new ApiError("Imvalid video ID");
+    throw new ApiError(400, "Imvalid video ID");
   }
 
   const user = req.user;
 
   if (!user) {
-    throw new ApiError("Unauthorized: user not found");
+    throw new ApiError(400, "Unauthorized: user not found");
   }
 
   // if (!mongoose.Types.ObjectId.isValid(user._id)) {
@@ -171,17 +171,17 @@ const updateVideo = asyncHandler(async (req, res) => {
   const updatedDescription = String(description).trim();
 
   if (!updatedTitle || !updatedDescription) {
-    throw new ApiError("Cannot found title and description");
+    throw new ApiError(400, "Cannot found title and description");
   }
 
   if (updatedTitle.length > 200)
-    throw new ApiError("Should be less than 200 character");
+    throw new ApiError(400, "Should be less than 200 character");
 
   if (updatedDescription.length > 200)
-    throw new ApiError("Should be less than 200 character");
+    throw new ApiError(400, "Should be less than 200 character");
 
   if (!res.files || !res.files.thumbnail || !res.files.thumbnail.length) {
-    new ApiError("Ubale to get thumbnail");
+    new ApiError(400, "Ubale to get thumbnail");
   }
 
   const updatedThumbnailLocalPath = res.files.thumbnail[0].path;
@@ -203,7 +203,7 @@ const updateVideo = asyncHandler(async (req, res) => {
   );
 
   if (!video) {
-    new ApiError("Unable to updated Video");
+    new ApiError(400, "Unable to updated Video");
   }
 
   res
