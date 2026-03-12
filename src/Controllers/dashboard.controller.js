@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
-import { Video } from "../Models/video.model.js";
-import { Subscription } from "../Models/subscription.model.js";
-import { Like } from "../Models/like.model.js";
+import { Video } from "../Models/video.models.js";
+import { Subscription } from "../Models/subscription.models.js";
+import { Like } from "../Models/like.models.js";
 import { ApiError } from "../Utils/ApiError.js";
 import { ApiResponse } from "../Utils/ApiResponse.js";
-import { asyncHandler } from "../Utils/asyncHandler.js";
+import { asyncHandler } from "../Utils/AsyncHandler.js";
 
 const getChannelStats = asyncHandler(async (req, res) => {
   // TODO: Get the channel stats like total video views, total subscribers, total videos, total likes etc.

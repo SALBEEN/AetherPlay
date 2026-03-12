@@ -1,5 +1,5 @@
 import mongoose, { mongo } from "mongoose";
-import { Comment } from "../Models/comment.model.js";
+import { Comment } from "../Models/comment.models.js";
 import { ApiError } from "../Utils/ApiError.js";
 import { ApiResponse } from "../Utils/ApiResponse.js";
 import { asyncHandler } from "../Utils/AsyncHandler.js";

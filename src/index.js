@@ -1,43 +1,40 @@
-import express from "express";
-import cors from "cors";
-import cookieParser from "cookie-parser";
+// require('dotenv').config({path: './env'})
+import dotenv from "dotenv";
+import connectDB from "./DB/index.js";
+import { app } from "./app.js";
+dotenv.config({
+  path: "./.env",
+});
 
-const app = express();
+connectDB()
+  .then(() => {
+    app.listen(process.env.PORT || 8000, () => {
+      console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log("MONGO db connection failed !!! ", err);
+  });
 
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN,
-    credentials: true,
-  }),
-);
+/*
+import express from "express"
+const app = express()
+( async () => {
+    try {
+        await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`)
+        app.on("errror", (error) => {
+            console.log("ERRR: ", error);
+            throw error
+        })
 
-app.use(express.json({ limit: "16kb" }));
-app.use(express.urlencoded({ extended: true, limit: "16kb" }));
-app.use(express.static("public"));
-app.use(cookieParser());
+        app.listen(process.env.PORT, () => {
+            console.log(`App is listening on port ${process.env.PORT}`);
+        })
 
-//routes import
-import userRouter from "./Routes/user.routes.js";
-import healthcheckRouter from "./Routes/healthcheck.routes.js";
-import tweetRouter from "./Routes/tweet.routes.js";
-import subscriptionRouter from "./Routes/subscription.routes.js";
-import videoRouter from "./Routes/video.routes.js";
-import commentRouter from "./Routes/comment.routes.js";
-import likeRouter from "./Routes/like.routes.js";
-import playlistRouter from "./Routes/playlist.routes.js";
-import dashboardRouter from "./Routes/dashboard.routes.js";
+    } catch (error) {
+        console.error("ERROR: ", error)
+        throw err
+    }
+})()
 
-//routes declaration
-app.use("/api/v1/healthcheck", healthcheckRouter);
-app.use("/api/v1/users", userRouter);
-app.use("/api/v1/tweets", tweetRouter);
-app.use("/api/v1/subscriptions", subscriptionRouter);
-app.use("/api/v1/videos", videoRouter);
-app.use("/api/v1/comments", commentRouter);
-app.use("/api/v1/likes", likeRouter);
-app.use("/api/v1/playlist", playlistRouter);
-app.use("/api/v1/dashboard", dashboardRouter);
-
-// http://localhost:8000/api/v1/users/register
-
-export { app };
+*/

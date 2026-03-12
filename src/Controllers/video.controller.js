@@ -1,10 +1,10 @@
 import mongoose, { isValidObjectId } from "mongoose";
-import { Video } from "../Models/video.model.js";
-import { User } from "../Models/user.model.js";
+import { Video } from "../Models/video.models.js";
+import { User } from "../Models/user.models.js";
 import { ApiError } from "../Utils/ApiError.js";
 import { ApiResponse } from "../Utils/ApiResponse.js";
-import { asyncHandler } from "../Utils/asyncHandler.js";
-import { uploadOnCloudinary } from "../Utils/cloudinary.js";
+import { asyncHandler } from "../Utils/AsyncHandler.js";
+import { uploadFileCloudinary } from "../Utils/cloudinary.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
   // const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
