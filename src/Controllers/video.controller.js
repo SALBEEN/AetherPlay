@@ -91,14 +91,14 @@ const publishAVideo = asyncHandler(async (req, res) => {
   if (videoDescription.length > 200)
     throw new ApiError(400, "videoDescription too long (max char is 200)");
 
-  const videoFile = await uploadOnCloudinary(videoLocalPath);
-  const thumbnailFile = await uploadOnCloudinary(thumbnailLocalPath);
+  const videoFile = await uploadFileCloudinary(videoLocalPath);
+  const thumbnailFile = await uploadFileCloudinary(thumbnailLocalPath);
 
   if (!videoFile || !thumbnailFile) {
     throw new ApiError(400, "File upload failed");
   }
 
-  const videoDuration = req.body.duration ? Number(req.body.duration) : null;
+  const videoDuration = req.body.duration ? Number(req.body.duration) : 0;
   const videoViews = req.body.views ? Number(req.body.views) : 0;
 
   const publishVideo = await Video.create({
@@ -116,7 +116,9 @@ const publishAVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, "video publish failed");
   }
 
-  res.status(200).json(new ApiResponse(200, {}, "Video Uploaded successfull"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, { publishVideo }, "Video Uploaded successfull"));
 });
 
 const getVideoById = asyncHandler(async (req, res) => {
@@ -180,13 +182,15 @@ const updateVideo = asyncHandler(async (req, res) => {
   if (updatedDescription.length > 200)
     throw new ApiError(400, "Should be less than 200 character");
 
-  if (!res.files || !res.files.thumbnail || !res.files.thumbnail.length) {
-    new ApiError(400, "Ubale to get thumbnail");
+  if (!res.file) {
+    new ApiError(400, "Unable to get thumbnail");
   }
 
-  const updatedThumbnailLocalPath = res.files.thumbnail[0].path;
+  const updatedThumbnailLocalPath = res.file?.path;
 
-  const updatedThumbnail = await uploadOnCloudinary(updatedThumbnailLocalPath);
+  const updatedThumbnail = await uploadFileCloudinary(
+    updatedThumbnailLocalPath,
+  );
 
   const video = await Video.findByIdAndUpdate(
     new mongoose.Types.ObjectId(videoId),
@@ -235,7 +239,9 @@ const deleteVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Video delete failed");
   }
 
-  res.status(200).jsom(new ApiResponse(200, {}, "Video deleted successfully"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, { deleted }, "Video deleted successfully"));
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
@@ -272,3 +278,5 @@ export {
   deleteVideo,
   togglePublishStatus,
 };
+
+// ALL DONE
