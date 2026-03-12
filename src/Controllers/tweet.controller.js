@@ -52,7 +52,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
   */
 
-  const userId = req.params;
+  const { userId } = req.params;
 
   if (!userId) {
     throw new ApiError("User cannot be found!!");

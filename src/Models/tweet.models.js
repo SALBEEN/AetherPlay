@@ -17,4 +17,4 @@ const tweetSchema = new Schema(
 
 tweetSchema.plugin(mongooseAggregatePaginate);
 
-export const Tweet = mongoose.model("Video", tweetSchema);
+export const Tweet = mongoose.model("Tweet", tweetSchema);
