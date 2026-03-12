@@ -18,3 +18,6 @@ const tweetSchema = new Schema(
 tweetSchema.plugin(mongooseAggregatePaginate);
 
 export const Tweet = mongoose.model("Tweet", tweetSchema);
+
+// ALL DONE
+// OPTIONAL : Advanve aggregate for greater details
