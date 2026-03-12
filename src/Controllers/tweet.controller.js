@@ -1,9 +1,9 @@
 import mongoose, { isValidObjectId } from "mongoose";
-import { Tweet } from "../models/tweet.model.js";
-import { User } from "../models/user.model.js";
-import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { Tweet } from "../Models/tweet.models.js";
+import { User } from "../Models/user.models.js";
+import { ApiError } from "../Utils/ApiError.js";
+import { ApiResponse } from "../Utils/ApiResponse.js";
+import { asyncHandler } from "../Utils/AsyncHandler.js";
 
 const createTweet = asyncHandler(async (req, res) => {
   const { content } = req.body;
@@ -162,7 +162,7 @@ const updateTweet = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .json(new ApiResponse(200, { updateTweet }, "Tweet updated successfully"));
+    .json(new ApiResponse(200, { updatedTweet }, "Tweet updated successfully"));
 });
 
 const deleteTweet = asyncHandler(async (req, res) => {
@@ -174,23 +174,17 @@ const deleteTweet = asyncHandler(async (req, res) => {
     throw new ApiError("Cannot find tweet id");
   }
 
-  const deleteTweet = await Tweet.findById(
-    tweetId,
-    {
-      $unset: {
-        content: "",
-        owner: "",
-      },
-    },
-    {
-      new: true,
-      runValidators: true,
-    },
-  );
+  if (!mongoose.Types.ObjectId.isValid(tweetId)) {
+    throw new ApiError(401, " Tweet doesnot exists");
+  }
+
+  const deleteTweet = await Tweet.findByIdAndDelete(tweetId);
 
   // send response
 
-  res.status(200).json(new ApiResponse(200, {}, "Tweet deleted successfully"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, { deleteTweet }, "Tweet deleted successfully"));
 });
 
 export { createTweet, getUserTweets, updateTweet, deleteTweet };

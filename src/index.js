@@ -1,27 +1,43 @@
-// require("dotenv").config({ path: "./env" });
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-import dotenv from "dotenv";
-// import express from "express";
-import connectDB from "./DB/index.js";
+const app = express();
 
-dotenv.config({ path: "./env" });
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
+  }),
+);
 
-import { app } from "./app.js";
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express.static("public"));
+app.use(cookieParser());
 
-// app.get("/salben", () => {
-//   console.log("Its Aether play Backend server");
-// });
+//routes import
+import userRouter from "./Routes/user.routes.js";
+import healthcheckRouter from "./Routes/healthcheck.routes.js";
+import tweetRouter from "./Routes/tweet.routes.js";
+import subscriptionRouter from "./Routes/subscription.routes.js";
+import videoRouter from "./Routes/video.routes.js";
+import commentRouter from "./Routes/comment.routes.js";
+import likeRouter from "./Routes/like.routes.js";
+import playlistRouter from "./Routes/playlist.routes.js";
+import dashboardRouter from "./Routes/dashboard.routes.js";
 
-connectDB()
-  .then(() => {
-    app.listen(process.env.PORT || 8000, () => {
-      console.log(`App is running in : ${process.env.PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.log("Data base connection Failed!!!!!!");
-  });
+//routes declaration
+app.use("/api/v1/healthcheck", healthcheckRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/tweets", tweetRouter);
+app.use("/api/v1/subscriptions", subscriptionRouter);
+app.use("/api/v1/videos", videoRouter);
+app.use("/api/v1/comments", commentRouter);
+app.use("/api/v1/likes", likeRouter);
+app.use("/api/v1/playlist", playlistRouter);
+app.use("/api/v1/dashboard", dashboardRouter);
 
-// app.listen(process.env.PORT, () => {
-//   console.log(`App listening on ${process.env.PORT}`);
-// });
+// http://localhost:8000/api/v1/users/register
+
+export { app };

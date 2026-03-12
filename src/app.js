@@ -26,9 +26,9 @@ import videoRouter from "./Routes/video.routes.js";
 // if any url starts with users that is direct the floe te userRouter file
 
 app.use("/api/v1/users", userRouter);
-app.use("/api/v1/video", videoRouter);
-app.use("/api/v1/playlist", playlistRouter);
-app.use("/api/v1/comment", commentRouter);
-app.use("/api/v1/tweet", tweetRouter);
+app.use("/api/v1/videos", videoRouter);
+app.use("/api/v1/playlists", playlistRouter);
+app.use("/api/v1/comments", commentRouter);
+app.use("/api/v1/tweets", tweetRouter);
 
 export { app };
