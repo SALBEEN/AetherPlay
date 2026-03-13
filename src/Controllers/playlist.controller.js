@@ -15,27 +15,27 @@ const createPlaylist = asyncHandler(async (req, res) => {
   const userId = req?.user?._id;
 
   if (!userId) {
-    throw new ApiError("User cannot found");
+    throw new ApiError(401, "User cannot found");
   }
 
   const isUserExists = await User.findById(userId);
 
   if (!isUserExists) {
-    throw new ApiError("User doesnot exists");
+    throw new ApiError(401, "User doesnot exists");
   }
 
   const isNameValid = name.trim().length > 0;
   const isDescriptionValid = description.trim().length > 0;
 
   if (!(isNameValid || isDescriptionValid)) {
-    throw new ApiError("Playlist name and description cannot be empty");
+    throw new ApiError(401, "Playlist name and description cannot be empty");
   }
 
-  await Playlist.createOne({
+  await Playlist.create({
     name: name,
     description: description,
     owner: userId,
-    video: null,
+    video: [],
   });
 
   res
@@ -48,13 +48,13 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
   // we have to find out the playlist created by the current user
 
   if (!userId) {
-    throw new ApiError("User id missing from params");
+    throw new ApiError(401, "User id missing from params");
   }
 
   const isUserExists = await User.findById(userId);
 
   if (!isUserExists) {
-    throw new ApiError("User doesnot Exists");
+    throw new ApiError(401, "User doesnot Exists");
   }
 
   const userPlaylists = await Playlist.aggregate([
@@ -112,11 +112,11 @@ const getPlaylistById = asyncHandler(async (req, res) => {
   //TODO: get playlist by id
 
   if (!playlistId) {
-    throw new ApiError("Playlist id not found");
+    throw new ApiError(401, "Playlist id not found");
   }
 
   if (!mongoose.Types.ObjectId.isValid(playlistId)) {
-    throw new ApiError("Invalid playlist ID");
+    throw new ApiError(401, "Invalid playlist ID");
   }
 
   const playlistDetails = await Playlist.findById(playlistId)
@@ -124,7 +124,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     .populate("video", "title thumbnail duration views");
 
   if (!playlistDetails) {
-    throw new ApiError("No such playlist exists");
+    throw new ApiError(401, "No such playlist exists");
   }
 
   res
@@ -142,24 +142,24 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
   const { playlistId, videoId } = req.params;
 
   if (!playlistId || !videoId) {
-    throw new ApiError("Unable to found playlistId or videoId");
+    throw new ApiError(401, "Unable to found playlistId or videoId");
   }
 
-  const playlist = await Playlist.findById(playlistId);
-  const video = await Video.findById(videoId);
+  const isPlaylist = await Playlist.findById(playlistId);
+  const isVideo = await Video.findById(videoId);
 
-  if (!isPlaylistExists || !isVideoExists) {
-    throw new ApiError("Playlist or video maynot exists");
+  if (!isPlaylist || !isVideo) {
+    throw new ApiError(401, "Playlist or video maynot exists");
   }
-
-  for (let index = 0; index < isPlaylistExists.video.length; index++) {
-    if (isPlaylistExists.video[index].toString() === videoId.toString()) {
-      throw new ApiError("Video already exists");
+  if (isPlaylist.video && isPlaylist.video.length > 0) {
+    for (let index = 0; index < isPlaylist.video.length; index++) {
+      if (isPlaylist.video[index].toString() === videoId.toString()) {
+        throw new ApiError(401, "Video already exists");
+      }
     }
   }
-
-  await Playlist.findByIdAndUpdate(
-    isPlaylistExists,
+  const playlist = await Playlist.findByIdAndUpdate(
+    isPlaylist,
     {
       $addToSet: { video: videoId },
     },
@@ -170,7 +170,13 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .json(new ApiResponse(200, {}, "Video Added to playlist successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        { playlist },
+        "Video Added to playlist successfully",
+      ),
+    );
 });
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
@@ -178,14 +184,14 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
   // TODO: remove video from playlist
 
   if (!playlistId || !videoId) {
-    throw new ApiError("Unable to found playlistId or videoId");
+    throw new ApiError(401, "Unable to found playlistId or videoId");
   }
 
   const playlist = await Playlist.findById(playlistId);
   const video = await Video.findById(videoId);
 
   if (!isPlaylistExists || !isVideoExists) {
-    throw new ApiError("Playlist or video maynot exists");
+    throw new ApiError(401, "Playlist or video maynot exists");
   }
 
   // for (let index = 0; index < isPlaylistExists.video.length; index++) {
@@ -237,22 +243,22 @@ const updatePlaylist = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
 
   if (!playlistId) {
-    throw new ApiError("Unable to find playlist id");
+    throw new ApiError(401, "Unable to find playlist id");
   }
 
-  if (!mongoose.Types.ObjectId.isValid(playlist)) {
-    throw new ApiError("Invalid Playlist ID");
+  if (!mongoose.Types.ObjectId.isValid(playlistId)) {
+    throw new ApiError(401, "Invalid Playlist ID");
   }
 
   if (!name || !description) {
-    throw new ApiError("Unable to found name and description ");
+    throw new ApiError(401, "Unable to found name and description ");
   }
 
-  if (!(name.trim().length < 0) || !(description.trim().length < 0)) {
-    throw new ApiError("Name or description cannot be empty");
+  if (!(name.trim().length > 0) || !(description.trim().length > 0)) {
+    throw new ApiError(401, "Name or description cannot be empty");
   }
 
-  await Playlist.findByIdAndUpdate(
+  const updatedPlaylist = await Playlist.findByIdAndUpdate(
     playlistId,
     {
       $set: {
@@ -264,6 +270,16 @@ const updatePlaylist = asyncHandler(async (req, res) => {
       new: true,
     },
   );
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { updatedPlaylist: updatedPlaylist },
+        "Playlist updated successfully",
+      ),
+    );
 });
 
 export {
