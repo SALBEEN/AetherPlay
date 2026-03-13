@@ -57,6 +57,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
     {
       $project: {
         comment: 1,
+        video: 1,
         createdAt: 1,
         updatedAt: 1,
         owner: {
@@ -169,14 +170,14 @@ const updateComment = asyncHandler(async (req, res) => {
 const deleteComment = asyncHandler(async (req, res) => {
   // TODO: delete a comment
 
-  const commentId = res.params;
+  const { commentId } = req.params;
 
   if (!commentId) {
-    throw new ApiError("cannot get comment id");
+    throw new ApiError(400, "cannot get comment id");
   }
 
   if (!mongoose.Types.ObjectId.isValid(commentId)) {
-    throw new ApiError("Invalid comment");
+    throw new ApiError(400, "Invalid comment");
   }
 
   const deletedComment = await Comment.findByIdAndDelete(commentId);
