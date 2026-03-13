@@ -75,24 +75,24 @@ const getVideoComments = asyncHandler(async (req, res) => {
 
 const addComment = asyncHandler(async (req, res) => {
   // TODO: add a comment to a video
-  const videoId = req.params;
+  const { videoId } = req.params;
 
   if (!videoId) {
-    throw new ApiError("Cannot get video Id");
+    throw new ApiError(400, "Cannot get video Id");
   }
 
   if (!mongoose.Types.ObjectId.isValid(videoId)) {
-    throw new ApiError("Invalid ID: Video doesnot exists");
+    throw new ApiError(400, "Invalid ID: Video doesnot exists");
   }
 
   const userId = req.user._id;
 
   if (!userId) {
-    throw new ApiError("Cannot get user Id");
+    throw new ApiError(400, "Cannot get user Id");
   }
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new ApiError("Error: User doesn't exists");
+    throw new ApiError(400, "Error: User doesn't exists");
   }
 
   const { content } = req.body;
@@ -100,21 +100,21 @@ const addComment = asyncHandler(async (req, res) => {
   const trimmedContent = String(content).trim();
 
   if (!trimmedContent) {
-    throw new ApiError("Comment cannot be empty");
+    throw new ApiError(400, "Comment cannot be empty");
   }
 
   if (trimmedContent.length > 300) {
-    throw new ApiError("Comment cannot be more than 300 character");
+    throw new ApiError(400, "Comment cannot be more than 300 character");
   }
 
   const comment = await Comment.create({
     content: content,
-    owner: mongoose.Types.ObjectId(userId),
-    video: mongoose.Types.ObjectId(videoId),
+    owner: new mongoose.Types.ObjectId(userId),
+    video: new mongoose.Types.ObjectId(videoId),
   });
 
   if (!comment) {
-    throw new ApiError("Cannot comment to the video");
+    throw new ApiError(400, "Cannot comment to the video");
   }
 
   res
@@ -126,7 +126,7 @@ const updateComment = asyncHandler(async (req, res) => {
   // TODO: update a comment
 
   const { newContent } = req.body;
-  const commentId = req.params;
+  const { commentId } = req.params;
 
   const trimmedContent = String(newContent).trim();
 
