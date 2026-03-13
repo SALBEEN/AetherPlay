@@ -187,10 +187,10 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Unable to found playlistId or videoId");
   }
 
-  const playlist = await Playlist.findById(playlistId);
-  const video = await Video.findById(videoId);
+  const isPlaylist = await Playlist.findById(playlistId);
+  const isVideo = await Video.findById(videoId);
 
-  if (!isPlaylistExists || !isVideoExists) {
+  if (!isPlaylist || !isVideo) {
     throw new ApiError(401, "Playlist or video maynot exists");
   }
 
@@ -200,8 +200,8 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
   //   }
   // }
 
-  await Playlist.findByIdAndUpdate(
-    isPlaylistExists,
+  const deletedVdoPlaylist = await Playlist.findByIdAndUpdate(
+    isPlaylist,
     {
       $pull: { video: videoId },
     },
@@ -215,7 +215,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        {},
+        { deletedPlaylistVdo: deletedVdoPlaylist },
         "Video removed from playlist playlist successfully",
       ),
     );
@@ -229,13 +229,21 @@ const deletePlaylist = asyncHandler(async (req, res) => {
     throw new ApiError("Unable to find playlist id");
   }
 
-  if (!mongoose.Types.ObjectId.isValid(playlist)) {
+  if (!mongoose.Types.ObjectId.isValid(playlistId)) {
     throw new ApiError("Invalid Playlist ID");
   }
 
-  await Playlist.findByIdAndDelete(playlistId);
+  const deletedPlaylist = await Playlist.findByIdAndDelete(playlistId);
 
-  res.status(200).json(200, {}, "Playlist deleted successfully");
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { deleted: deletedPlaylist },
+        "Playlist deleted successfully",
+      ),
+    );
 });
 
 const updatePlaylist = asyncHandler(async (req, res) => {
@@ -291,3 +299,6 @@ export {
   deletePlaylist,
   updatePlaylist,
 };
+
+// ALL DONE
+// MORE VALIDATION WILL BE ADDED IN V2
