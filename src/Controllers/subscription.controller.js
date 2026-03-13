@@ -22,12 +22,16 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     throw new ApiError("User id unable to found");
   }
 
+  if (!isValidObjectId(channelId)) {
+    throw new ApiError(400, "Invalid channel id");
+  }
+
   // we have the channel to toggle subscription and loggedin user who will
   // subscribe the channel
 
   // firstly find if the user is already a subscriber
 
-  const existingSubscriber = await Subscription.findById({
+  const existingSubscriber = await Subscription.findOne({
     channel: channelId,
     subscriber: userId,
   });
@@ -42,7 +46,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
     res.status(200).json(new ApiResponse(200, {}, "Unsubscribed done"));
   } else {
-    await Subscription.createOne({
+    await Subscription.create({
       channel: channelId,
       subscriber: userId,
     });
@@ -53,7 +57,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
 // controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
-  const { channelId } = req.params;
+  const { channelId } = req.params; // subscriberId -> current logged In userID
 
   if (!channelId) {
     throw new ApiError("Unable to find channel");
@@ -61,7 +65,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 
   // we have to take out all the subscribers of the current users
 
-  const userChannelSubscriber = await Subscription.aggregate([
+  const userChannelSubscribers = await Subscription.aggregate([
     {
       $match: {
         channel: new mongoose.Types.ObjectId(channelId),
@@ -70,14 +74,14 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     {
       $lookup: {
         from: "users",
-        localFiled: "subscriber",
+        localField: "subscriber",
         foreignField: "_id",
         as: "subscriberInfo",
       },
     },
     {
       $unwind: {
-        path: "subscriberInfo",
+        path: "$subscriberInfo",
         preserveNullAndEmptyArrays: true,
       },
     },
@@ -102,7 +106,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { subscriber: userChannelSubscriber },
+        { subscriber: userChannelSubscribers },
         "List Of channel subscribers",
       ),
     );
@@ -114,6 +118,10 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
 
   if (!subscriberId) {
     throw new ApiError("Cannot find subscriberId");
+  }
+
+  if (!isValidObjectId(subscriberId)) {
+    throw new ApiError(400, "Invalid channel id");
   }
 
   // we have to take out all the channels that the user have
@@ -128,7 +136,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
     {
       $lookup: {
         from: "users",
-        localFiled: "channel",
+        localField: "channel",
         foreignField: "_id",
         as: "subscribedToInfo",
       },
@@ -143,7 +151,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
       $project: {
         createdAt: 1,
         updatedAt: 1,
-        subscriber: {
+        channel: {
           _id: "$subscribedToInfo._id",
           fullName: "$subscribedToInfo.fullName",
           username: "$subscribedToInfo.username",
@@ -160,10 +168,12 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { SubscribedTo: getSubscribedChannels },
+        { SubscribedTo: userChannelSubscribedTo },
         "All Channel to whom suer subscribed",
       ),
     );
 });
 
 export { toggleSubscription, getUserChannelSubscribers, getSubscribedChannels };
+
+// ALL DONE
