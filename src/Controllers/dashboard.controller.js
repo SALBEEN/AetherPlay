@@ -8,6 +8,54 @@ import { asyncHandler } from "../Utils/AsyncHandler.js";
 
 const getChannelStats = asyncHandler(async (req, res) => {
   // TODO: Get the channel stats like total video views, total subscribers, total videos, total likes etc.
+
+  const user = req?.user?._id;
+
+  if (!user) {
+    throw new ApiError(400, "Cannot get user ID");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(user)) {
+    throw new ApiError(400, "Unauthorized user");
+  }
+
+  const totalViews = await Video.aggregate([
+    {
+      $match: {
+        owner: new mongoose.Types.ObjectId(user),
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalViews: {
+          $sum: "$views",
+        },
+      },
+    },
+  ]);
+
+  const totalVideo = await Video.aggregate([
+    {
+      $match: {
+        owner: new mongoose.Types.ObjectId(user),
+      },
+    },
+    {
+      $count: "totalVideos",
+    },
+  ]);
+
+  const totalSubscriber = await Video.aggregate([
+    {
+      $match: {
+        channel: new mongoose.Types.ObjectId(user),
+      },
+    },
+    {
+      $count: "totalSubscriber",
+    },
+  ]);
 });
 
 const getChannelVideos = asyncHandler(async (req, res) => {
