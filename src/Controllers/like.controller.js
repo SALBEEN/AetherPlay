@@ -168,7 +168,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     {
       $lookup: {
         from: "users",
-        localField: "$videoInfo.owner",
+        localField: "videoInfo.owner",
         foreignField: "_id",
         as: "ownerInfo",
       },
@@ -200,7 +200,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     },
     {
       $sort: {
-        likedAt: "-1",
+        likedAt: -1,
       },
     },
   ]);
