@@ -71,13 +71,26 @@ const getChannelStats = asyncHandler(async (req, res) => {
     },
     {
       $match: {
-        "videoInfo.owner": new mongoose.Types.ObjectId(channelId),
+        "videoInfo.owner": new mongoose.Types.ObjectId(user),
       },
     },
     {
       $count: "totalLikes",
     },
   ]);
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        totalLikes: totalLikes,
+        totalSubscriber: totalSubscriber,
+        totalVideo: totalVideo,
+        totalViews: totalViews,
+      },
+      "All channel stats",
+    ),
+  );
 });
 
 const getChannelVideos = asyncHandler(async (req, res) => {
