@@ -68,7 +68,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
   }
   //TODO: toggle like on video
 
-  const isAlreadyLiked = await Like.findById({
+  const isAlreadyLiked = await Like.findOne({
     video: commentId,
     likedBy: user,
   });
@@ -79,7 +79,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
       likedBy: user,
     });
   } else {
-    Like.createOne({
+    Like.create({
       video: commentId,
       likedBy: user,
     });
@@ -111,7 +111,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
   }
   //TODO: toggle like on video
 
-  const isAlreadyLiked = await Like.findById({
+  const isAlreadyLiked = await Like.findOne({
     video: tweetId,
     likedBy: user,
   });
@@ -122,7 +122,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
       likedBy: user,
     });
   } else {
-    Like.createOne({
+    Like.create({
       video: tweetId,
       likedBy: user,
     });
@@ -148,7 +148,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
   const likedVideos = await Like.aggregate([
     {
       $match: {
-        likedBy: mongoose.Types.ObjectId(user),
+        likedBy: new mongoose.Types.ObjectId(user),
       },
     },
     {
@@ -162,7 +162,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     {
       $unwind: {
         path: "$videoInfo",
-        preserveNullAndEmptyArrays: false,
+        preserveNullAndEmptyArrays: true,
       },
     },
     {
