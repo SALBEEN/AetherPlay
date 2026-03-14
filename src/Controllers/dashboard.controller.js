@@ -56,6 +56,28 @@ const getChannelStats = asyncHandler(async (req, res) => {
       $count: "totalSubscriber",
     },
   ]);
+
+  const totalLikes = await Like.aggregate([
+    {
+      $lookup: {
+        from: "videos",
+        localField: "video",
+        foreignField: "_id",
+        as: "videoInfo",
+      },
+    },
+    {
+      $unwind: "$videoInfo",
+    },
+    {
+      $match: {
+        "videoInfo.owner": new mongoose.Types.ObjectId(channelId),
+      },
+    },
+    {
+      $count: "totalLikes",
+    },
+  ]);
 });
 
 const getChannelVideos = asyncHandler(async (req, res) => {
