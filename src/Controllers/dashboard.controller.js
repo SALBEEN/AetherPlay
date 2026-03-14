@@ -15,17 +15,17 @@ const getChannelVideos = asyncHandler(async (req, res) => {
   const user = req.user._id;
 
   if (!user) {
-    throw new ApiError("cannot get user id");
+    throw new ApiError(400, "cannot get user id");
   }
 
   if (!mongoose.Types.ObjectId.isValid(user)) {
-    throw new ApiError("Invalid User ");
+    throw new ApiError(400, "Invalid User ");
   }
 
   const channelVideo = await Video.aggregate([
     {
       $match: {
-        owner: mongoose.Types.ObjectId(user),
+        owner: new mongoose.Types.ObjectId(user),
       },
     },
     {
