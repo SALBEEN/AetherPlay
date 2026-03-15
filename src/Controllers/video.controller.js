@@ -10,13 +10,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
   // const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
   //TODO: get all videos based on query, sort, pagination
 
-  if (!userId) {
-    throw new ApiError(400, "No userId found.");
-  }
+  // if (!userId) {
+  //   throw new ApiError(400, "No userId found.");
+  // }
 
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new ApiError(400, "Invalif user ID");
-  }
+  // if (!mongoose.Types.ObjectId.isValid(userId)) {
+  //   throw new ApiError(400, "Invalif user ID");
+  // }
 
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
@@ -34,7 +34,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
   const videos = await Video.find({ title: { $regex: query, $options: "i" } }) // regex: matches the query in video title
     .sort({ [sortBy]: sortType }) // sortby: views/likes/  sortType: 1(asc)/ -1(desen)
     .skip((page - 1) * limit) // skips the number of video
-    .limit(limit); // add limit of video maybe a number
+    .limit(limit)
+    .populate('owner', 'username avatar fullName')// add limit of video maybe a number
 
   res
     .status(200)
