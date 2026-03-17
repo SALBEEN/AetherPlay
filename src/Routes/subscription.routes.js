@@ -7,10 +7,11 @@ import {
 import { verifyJWT } from "../Middlewares/auth.middleware.js";
 
 const router = Router();
-router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
+router.use(verifyJWT);
 
+// Fix: changed :subscriberId to :channelId to match controller
 router
-  .route("/c/:subscriberId")
+  .route("/c/:channelId")
   .get(getSubscribedChannels)
   .post(toggleSubscription);
 
