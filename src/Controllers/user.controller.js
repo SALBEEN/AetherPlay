@@ -4,6 +4,7 @@ import { User } from "../Models/user.models.js";
 import { uploadFileCloudinary } from "../Utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import { ApiResponse } from "../Utils/ApiResponse.js";
+import mongoose from "mongoose";
 
 /*
 Dependies Methods
@@ -546,7 +547,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
   const user = await User.aggregate([
     {
       $match: {
-        _id: req.user._id,
+        _id: new mongoose.Types.ObjectId(req.user._id),
       },
     },
     {
@@ -596,11 +597,49 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     );
 });
 
+const addToWatchHistory = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+  const userId = req.user._id;
+
+  if (!videoId) {
+    throw new ApiError(400, "Video ID required");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    throw new ApiError(400, "Invalid video ID");
+  }
+
+  // Add to watch history — avoid duplicates, keep latest at top
+  await User.findByIdAndUpdate(
+    userId,
+    {
+      $pull: { watchHistory: videoId },
+    },
+    { new: true },
+  );
+
+  await User.findByIdAndUpdate(
+    userId,
+    {
+      $push: {
+        watchHistory: {
+          $each: [videoId],
+          $position: 0,
+        },
+      },
+    },
+    { new: true },
+  );
+
+  res.status(200).json(new ApiResponse(200, {}, "Added to watch history"));
+});
+
 // exporting methods
 export {
   registerUser,
   logInUser,
   logOutUser,
+  addToWatchHistory,
   changeUserPassword,
   getCurrentUser,
   updateAccountDetails,
