@@ -45,16 +45,14 @@ const createPlaylist = asyncHandler(async (req, res) => {
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
   const { userId } = req.params;
-  // we have to find out the playlist created by the current user
 
   if (!userId) {
     throw new ApiError(401, "User id missing from params");
   }
 
   const isUserExists = await User.findById(userId);
-
   if (!isUserExists) {
-    throw new ApiError(401, "User doesnot Exists");
+    throw new ApiError(401, "User does not exist");
   }
 
   const userPlaylists = await Playlist.aggregate([
@@ -63,6 +61,26 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
         owner: new mongoose.Types.ObjectId(userId),
       },
     },
+    // Lookup videos
+    {
+      $lookup: {
+        from: "videos",
+        localField: "video",
+        foreignField: "_id",
+        as: "video",
+        pipeline: [
+          {
+            $project: {
+              title: 1,
+              thumbnail: 1,
+              duration: 1,
+              views: 1,
+            },
+          },
+        ],
+      },
+    },
+    // Lookup owner
     {
       $lookup: {
         from: "users",
@@ -96,20 +114,19 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     },
   ]);
 
-  res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        playlists: userPlaylists,
-      },
-      "Playlist fetched Successfully",
-    ),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { playlists: userPlaylists },
+        "Playlist fetched Successfully",
+      ),
+    );
 });
 
 const getPlaylistById = asyncHandler(async (req, res) => {
   const { playlistId } = req.params;
-  //TODO: get playlist by id
 
   if (!playlistId) {
     throw new ApiError(401, "Playlist id not found");
@@ -119,11 +136,88 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid playlist ID");
   }
 
-  const playlistDetails = await Playlist.findById(playlistId)
-    .populate("owner", "fullName username avatar email")
-    .populate("video", "title thumbnail duration views");
+  const playlistDetails = await Playlist.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(playlistId),
+      },
+    },
+    // Lookup full video details with owner
+    {
+      $lookup: {
+        from: "videos",
+        localField: "video",
+        foreignField: "_id",
+        as: "video",
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {
+                  $project: {
+                    username: 1,
+                    avatar: 1,
+                    fullName: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addFields: {
+              owner: { $first: "$owner" },
+            },
+          },
+          {
+            $project: {
+              title: 1,
+              thumbnail: 1,
+              duration: 1,
+              views: 1,
+              createdAt: 1,
+              owner: 1,
+            },
+          },
+        ],
+      },
+    },
+    // Lookup owner
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "ownerInfo",
+      },
+    },
+    {
+      $unwind: {
+        path: "$ownerInfo",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        name: 1,
+        description: 1,
+        video: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        owner: {
+          _id: "$ownerInfo._id",
+          fullName: "$ownerInfo.fullName",
+          username: "$ownerInfo.username",
+          avatar: "$ownerInfo.avatar",
+        },
+      },
+    },
+  ]);
 
-  if (!playlistDetails) {
+  if (!playlistDetails?.length) {
     throw new ApiError(401, "No such playlist exists");
   }
 
@@ -132,7 +226,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        playlistDetails,
+        playlistDetails[0],
         "Successfully found playlist by ID",
       ),
     );
@@ -164,7 +258,7 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
       $addToSet: { video: videoId },
     },
     {
-      $new: true,
+      new: true,
     },
   );
 
@@ -206,7 +300,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
       $pull: { video: videoId },
     },
     {
-      $new: true,
+      new: true,
     },
   );
 

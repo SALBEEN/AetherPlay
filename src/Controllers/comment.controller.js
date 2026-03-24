@@ -5,30 +5,18 @@ import { ApiResponse } from "../Utils/ApiResponse.js";
 import { asyncHandler } from "../Utils/AsyncHandler.js";
 
 const getVideoComments = asyncHandler(async (req, res) => {
-  //TODO: get all comments for a video
   const { videoId } = req.params;
-  // const { page = "", limit "" } = req.query;
-
-  const user = req?.user._id;
 
   if (!videoId) {
-    throw new ApiError("Unable to found video id");
+    throw new ApiError(400, "Unable to found video id");
   }
 
   if (!mongoose.Types.ObjectId.isValid(videoId)) {
-    throw new ApiError("Invalid video id: video doesnot exists");
-  }
-
-  if (!user) {
-    throw new ApiError("Unable to found user id");
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(user)) {
-    throw new ApiError("Invalid user id: user doesnot exists");
+    throw new ApiError(400, "Invalid video id");
   }
 
   const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 10;
+  const limit = Number(req.query.limit) || 50;
   const skip = (page - 1) * limit;
 
   const comment = await Comment.aggregate([
@@ -56,13 +44,14 @@ const getVideoComments = asyncHandler(async (req, res) => {
     },
     {
       $project: {
-        comment: 1,
+        content: 1, // ← was missing!
         video: 1,
         createdAt: 1,
         updatedAt: 1,
         owner: {
           _id: "$ownerInfo._id",
-          fullname: "$ownerInfo.fullName",
+          username: "$ownerInfo.username", // ← fixed from fullname
+          fullName: "$ownerInfo.fullName",
           avatar: "$ownerInfo.avatar",
         },
       },
@@ -118,9 +107,21 @@ const addComment = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Cannot comment to the video");
   }
 
+  // Populate owner details before returning
+  const populatedComment = await Comment.findById(comment._id).populate(
+    "owner",
+    "username avatar fullName",
+  );
+
   res
     .status(200)
-    .json(new ApiResponse(200, { comment }, "Comment added to the video"));
+    .json(
+      new ApiResponse(
+        200,
+        { comment: populatedComment },
+        "Comment added to the video",
+      ),
+    );
 });
 
 const updateComment = asyncHandler(async (req, res) => {
@@ -188,5 +189,3 @@ const deleteComment = asyncHandler(async (req, res) => {
 });
 
 export { getVideoComments, addComment, updateComment, deleteComment };
-
-// ALL DONE

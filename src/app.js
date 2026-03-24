@@ -38,6 +38,6 @@ app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/playlists", playlistRouter);
 app.use("/api/v1/dashboards", dashboardRouter);
 
-// http://localhost:8000/api/v1/users/register
+
 
 export { app };
