@@ -52,7 +52,7 @@ userSchema.pre("save", async function () {
   // using a validation if the change happen in password field or change req occur in password field
   if (!this.isModified("password")) return;
   // hash the password and wait for result
-  this.password = await bcrypt.hash(this.password, 10);
+  this.password = bcrypt.hash(this.password, 10);
 });
 
 // this function or method of mongoose given a boolean value by comparing password from input and db
@@ -78,7 +78,7 @@ userSchema.methods.generateAccessToken = function () {
 };
 
 userSchema.methods.generateRefreshToken = function () {
-  return jwt.sign(  
+  return jwt.sign(
     //payload for sign
     {
       _id: this._id,
@@ -91,4 +91,3 @@ userSchema.methods.generateRefreshToken = function () {
 };
 
 export const User = mongoose.model("User", userSchema);
-  
