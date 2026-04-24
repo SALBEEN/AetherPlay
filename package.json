@@ -3,16 +3,15 @@
   "version": "1.0.0",
   "description": "A backend app",
   "type": "module",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
+    "start": "node src/index.js",
     "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
   },
-  "keywords": [
-    "hello",
-    "world",
-    "salbeen",
-    "chapagain"
-  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["hello", "world", "salbeen", "chapagain"],
   "author": "WIZ SALBEEN",
   "license": "ISC",
   "devDependencies": {
