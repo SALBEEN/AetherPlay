@@ -2,11 +2,15 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-const app = express();    
+const app = express();
 
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: [
+      "http://localhost:5173",
+      process.env.FRONTEND_URL,
+      "https://aetherplay-git-main-salbeen-chapagains-projects.vercel.app",
+    ],
     credentials: true,
   }),
 );
@@ -37,7 +41,5 @@ app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/playlists", playlistRouter);
 app.use("/api/v1/dashboards", dashboardRouter);
-
-
 
 export { app };
