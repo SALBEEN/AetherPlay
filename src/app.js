@@ -9,8 +9,11 @@ app.use(
     origin: [
       "http://localhost:5173",
       process.env.FRONTEND_URL,
+      "https://aetherplay-seven.vercel.app",
       "https://aetherplay-git-main-salbeen-chapagains-projects.vercel.app",
     ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   }),
 );
