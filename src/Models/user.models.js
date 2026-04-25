@@ -52,7 +52,8 @@ userSchema.pre("save", async function () {
   // using a validation if the change happen in password field or change req occur in password field
   if (!this.isModified("password")) return;
   // hash the password and wait for result
-  this.password = bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
 });
 
 // this function or method of mongoose given a boolean value by comparing password from input and db
