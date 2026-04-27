@@ -8,16 +8,6 @@ dotenv.config({
 
 import cors from "cors";
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      process.env.FRONTEND_URL,
-      "https://aetherplay-git-main-salbeen-chapagains-projects.vercel.app",
-    ],
-    credentials: true,
-  }),
-);
 
 connectDB()
   .then(() => {

@@ -44,7 +44,10 @@ const uploadFileCloudinary = async (localFileUrl) => {
     // upload file in cloudinary (cloudinary is already v2 via the import above)
     const response = await cloudinary.uploader.upload(localFileUrl, {
       resource_type: "auto",
+      folder: "videos",
     });
+
+    const videoPublicId = response.public_id;
 
     // remove the local file after successful upload if it exists
     try {
@@ -55,7 +58,8 @@ const uploadFileCloudinary = async (localFileUrl) => {
     }
 
     console.log("File uploaded to cloudinary successfully...!!!");
-    return response;
+    // return response;
+    return { response, videoPublicId };
   } catch (error) {
     // attempt to remove the local file when upload fails
     try {
