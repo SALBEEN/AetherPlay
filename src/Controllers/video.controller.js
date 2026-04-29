@@ -94,20 +94,18 @@ const publishAVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, "videoDescription too long (max char is 200)");
 
   // for uplaoded video
-  const { url: videoURL, publid_id: video_public_id } =
+  const { url: videoURL, public_id: video_public_id } =
     await uploadFileCloudinary(videoLocalPath);
 
   // for uploaded thumbnail
-  const { url: thumbnailURL, publid_id: thumbnail_public_url } =
+  const { url: thumbnailURL, public_id: thumbnail_public_url } =
     await uploadFileCloudinary(thumbnailLocalPath);
 
   // if (!videoFile || !thumbnailFile) {
   //   throw new ApiError(400, "File upload failed");
   // }
 
-  // it will create a hls url
-  const HLSUrl = getHLSUrl(video_public_id);
-
+  // validation
   if (!videoURL || !video_public_id) {
     throw new ApiError(400, "Cannot get response from cloudinary upload");
   }
@@ -115,6 +113,8 @@ const publishAVideo = asyncHandler(async (req, res) => {
   if (!thumbnailURL || !thumbnail_public_url) {
     throw new ApiError(400, "Cannot get response from cloudinary upload");
   }
+  // it will create a hls url
+  const HLSUrl = getHLSUrl(video_public_id);
 
   const videoDuration = req.body.duration ? Number(req.body.duration) : 0;
   const videoViews = req.body.views ? Number(req.body.views) : 0;
