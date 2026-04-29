@@ -257,6 +257,7 @@ const logInUser = asyncHandler(async (req, res) => {
       const option = {
         httpOnly: true,
         secure: true,
+        sameSite: "none",
       };
 
       const { accessToken, newRefreshToken } =
