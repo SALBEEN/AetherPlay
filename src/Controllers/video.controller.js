@@ -93,10 +93,11 @@ const publishAVideo = asyncHandler(async (req, res) => {
   if (videoDescription.length > 200)
     throw new ApiError(400, "videoDescription too long (max char is 200)");
 
+  // for uplaoded video
   const { videoResponseUrl, videoPublicId } =
     await uploadFileCloudinary(videoLocalPath);
 
-  //jwshdqw
+  // for uploaded thumbnail
   const { thumbnailResponseUrl, thumbnailPublicId } =
     await uploadFileCloudinary(thumbnailLocalPath);
 

@@ -47,7 +47,7 @@ const uploadFileCloudinary = async (localFileUrl) => {
       folder: "videos",
     });
 
-    const videoPublicId = response.public_id;
+    const PublicId = response.public_id;
 
     // remove the local file after successful upload if it exists
     try {
@@ -59,14 +59,14 @@ const uploadFileCloudinary = async (localFileUrl) => {
 
     console.log("File uploaded to cloudinary successfully...!!!");
     // return response;
-    return { response, videoPublicId };
+    return { url: response.secure_url, public_id: PublicId };
   } catch (error) {
     // attempt to remove the local file when upload fails
     try {
       if (localFileUrl && fs.existsSync(localFileUrl))
         fs.unlinkSync(localFileUrl);
     } catch (err) {
-      console.warn(
+      console.waorn(
         "Could not remove local file after failed upload:",
         err.message || err,
       );
