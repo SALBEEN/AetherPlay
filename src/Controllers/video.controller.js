@@ -94,25 +94,26 @@ const publishAVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, "videoDescription too long (max char is 200)");
 
   // for uplaoded video
-  const { videoResponseUrl, videoPublicId } =
+  const { url: videoURL, publid_id: video_public_id } =
     await uploadFileCloudinary(videoLocalPath);
 
   // for uploaded thumbnail
-  const { thumbnailResponseUrl, thumbnailPublicId } =
+  const { url: thumbnailURL, publid_id: thumbnail_public_url } =
     await uploadFileCloudinary(thumbnailLocalPath);
 
   // if (!videoFile || !thumbnailFile) {
   //   throw new ApiError(400, "File upload failed");
   // }
 
-  const HLSUrl = getHLSUrl(videoPublicId);
+  // it will create a hls url
+  const HLSUrl = getHLSUrl(video_public_id);
 
-  if (!videoResponseUrl || !videoPublicId) {
-    throw ApiError(400, "Cannot get response from cloudinary upload");
+  if (!videoURL || !video_public_id) {
+    throw new ApiError(400, "Cannot get response from cloudinary upload");
   }
 
-  if (!thumbnailResponseUrl || !thumbnailPublicId) {
-    throw ApiError(400, "Cannot get response from cloudinary upload");
+  if (!thumbnailURL || !thumbnail_public_url) {
+    throw new ApiError(400, "Cannot get response from cloudinary upload");
   }
 
   const videoDuration = req.body.duration ? Number(req.body.duration) : 0;
@@ -120,8 +121,8 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
   const publishVideo = await Video.create({
     videoFile: HLSUrl,
-    publicId: videoPublicId,
-    thumbnail: thumbnailResponseUrl.url,
+    publicId: video_public_id,
+    thumbnail: thumbnailURL,
     title: videoTitle,
     description: videoDescription,
     duration: videoDuration,
