@@ -12,7 +12,7 @@ app.use(
       "https://aetherplay-seven.vercel.app",
       "https://aetherplay-git-main-salbeen-chapagains-projects.vercel.app",
     ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   }),
